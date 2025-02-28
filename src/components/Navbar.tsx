@@ -1,145 +1,168 @@
 
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import AnimatedButton from './AnimatedButton';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/hooks/use-mobile";
+import { GraduationCap, Menu, X, Users } from "lucide-react";
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const location = useLocation();
-  
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Marketplace', path: '/marketplace' },
-    { name: 'Tutors', path: '/tutors' },
-    { name: 'About', path: '/about' },
-  ];
-  
+
+  // Close mobile menu when route changes
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!isMobile && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile, isMenuOpen]);
+
+  // Close mobile menu when clicking outside
   useEffect(() => {
-    // Close mobile menu when route changes
-    setIsMobileMenuOpen(false);
-  }, [location]);
-  
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (isMenuOpen && e.target instanceof HTMLElement) {
+        const navbar = document.getElementById("navbar");
+        if (navbar && !navbar.contains(e.target)) {
+          setIsMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isMenuOpen]);
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/marketplace", label: "Marketplace" },
+    { to: "/about", label: "About" },
+  ];
+
+  const callToActionLinks = [
+    { to: "/tutors", label: "For Tutors", icon: <GraduationCap className="h-4 w-4 mr-2" /> },
+    { to: "/students", label: "For Students", icon: <Users className="h-4 w-4 mr-2" /> },
+  ];
+
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'py-3 bg-white/80 backdrop-blur-lg shadow-subtle' : 'py-5 bg-transparent'
-      }`}
+    <header
+      id="navbar"
+      className={cn(
+        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      )}
     >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link 
-            to="/" 
-            className="text-2xl font-display font-semibold text-secondary flex items-center"
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-lg font-bold text-accent"
           >
-            <span className="bg-secondary text-white px-2 py-1 rounded mr-1 transform transition-transform hover:scale-105">Ed</span>
-            <span className="text-secondary transform transition-transform hover:scale-105">Vix</span>
+            <GraduationCap className="h-5 w-5" />
+            EdVix
           </Link>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+
+          {/* Desktop navigation */}
+          <nav className="ml-10 hidden md:flex gap-6">
             {navLinks.map((link) => (
               <Link
-                key={link.path}
-                to={link.path}
-                className={`relative text-sm font-medium transition-colors button-hover-animation ${
-                  location.pathname === link.path 
-                    ? 'text-secondary' 
-                    : 'text-secondary/70 hover:text-secondary'
-                }`}
+                key={link.to}
+                to={link.to}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-accent",
+                  location.pathname === link.to
+                    ? "text-accent"
+                    : "text-muted-foreground"
+                )}
               >
-                {link.name}
+                {link.label}
               </Link>
             ))}
           </nav>
-          
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <AnimatedButton 
-              variant="outline" 
+        </div>
+
+        {/* Desktop call to action */}
+        <div className="hidden md:flex gap-2">
+          {callToActionLinks.map((link) => (
+            <Button
+              key={link.to}
+              variant={location.pathname === link.to ? "default" : "outline"}
               size="sm"
+              asChild
             >
-              Log In
-            </AnimatedButton>
-            <AnimatedButton size="sm">
-              Sign Up
-            </AnimatedButton>
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden p-2 rounded-md text-secondary"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <div className="w-6 h-5 flex flex-col justify-between">
-              <span 
-                className={`block h-0.5 bg-current transform transition-all duration-300 ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
-              ></span>
-              <span 
-                className={`block h-0.5 bg-current transition-opacity duration-300 ${
-                  isMobileMenuOpen ? 'opacity-0' : ''
-                }`}
-              ></span>
-              <span 
-                className={`block h-0.5 bg-current transform transition-all duration-300 ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
-              ></span>
-            </div>
-          </button>
+              <Link to={link.to} className="flex items-center">
+                {link.icon}
+                {link.label}
+              </Link>
+            </Button>
+          ))}
         </div>
-        
-        {/* Mobile Menu */}
-        <div 
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-out-expo ${
-            isMobileMenuOpen ? 'max-h-64 mt-4' : 'max-h-0 mt-0'
-          }`}
+
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
         >
-          <nav className="flex flex-col space-y-4 py-4">
+          {isMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+
+      {/* Mobile navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t">
+          <nav className="container py-4 grid gap-2">
             {navLinks.map((link) => (
               <Link
-                key={link.path}
-                to={link.path}
-                className={`text-base font-medium px-1 py-2 ${
-                  location.pathname === link.path 
-                    ? 'text-secondary' 
-                    : 'text-secondary/70'
-                }`}
+                key={link.to}
+                to={link.to}
+                className={cn(
+                  "py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                  location.pathname === link.to
+                    ? "bg-muted text-accent"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
               >
-                {link.name}
+                {link.label}
               </Link>
             ))}
-            <div className="flex flex-col space-y-3 pt-3">
-              <AnimatedButton 
-                variant="outline" 
-                size="sm" 
-                className="w-full justify-center"
-              >
-                Log In
-              </AnimatedButton>
-              <AnimatedButton 
-                size="sm" 
-                className="w-full justify-center"
-              >
-                Sign Up
-              </AnimatedButton>
+            
+            <div className="border-t my-2 pt-2">
+              {callToActionLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={cn(
+                    "flex items-center py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                    location.pathname === link.to
+                      ? "bg-accent text-accent-foreground"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  {link.icon}
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </nav>
         </div>
-      </div>
+      )}
     </header>
   );
 };

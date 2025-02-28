@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type User = {
@@ -115,7 +116,7 @@ const sampleConversations: Conversation[] = [
       {
         id: 'm6',
         senderId: 's4',
-        text: 'Dr. Johnson, can we reschedule tomorrow's session?',
+        text: "Dr. Johnson, can we reschedule tomorrow's session?",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
         read: true,
       },

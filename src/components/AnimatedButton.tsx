@@ -70,24 +70,22 @@ const AnimatedButton = ({
       <span className="relative z-10 flex items-center justify-center gap-2">
         {children}
       </span>
-      <style>
-        {`
-          .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 600ms linear;
-            background-color: rgba(255, 255, 255, 0.7);
+      <style jsx>{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple 600ms linear;
+          background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
           }
-          
-          @keyframes ripple {
-            to {
-              transform: scale(4);
-              opacity: 0;
-            }
-          }
-        `}
-      </style>
+        }
+      `}</style>
     </button>
   );
 };

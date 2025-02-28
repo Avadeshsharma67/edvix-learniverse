@@ -150,9 +150,6 @@ export default {
 			backdropBlur: {
 				xs: '2px',
 			},
-			blur: {
-				xs: '2px',
-			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

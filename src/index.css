@@ -97,20 +97,10 @@
            before:bg-gradient-to-r before:from-[#e4e4e7]/50 before:to-[#a1a1aa]/50 before:blur-sm 
            before:transition-all before:duration-1000 before:animate-pulse-subtle;
   }
-  
-  .lazy-image {
-    @apply blur-xs transition-all duration-700 ease-out;
-  }
-  
-  .lazy-image.loaded {
-    @apply blur-0;
-  }
 }
 
-@layer utilities {
-  .section-spacing {
-    @apply py-12 md:py-20 lg:py-24;
-  }
+.section-spacing {
+  @apply py-12 md:py-20 lg:py-24;
 }
 
 /* Animation Utilities */
@@ -141,6 +131,14 @@
 
 .button-hover-animation:hover:after {
   @apply transform scale-x-100 origin-bottom-left;
+}
+
+.lazy-image {
+  @apply blur-xs transition-all duration-700 ease-out;
+}
+
+.lazy-image.loaded {
+  @apply blur-0;
 }
 
 /* Custom animations for page transitions */

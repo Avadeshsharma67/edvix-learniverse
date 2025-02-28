@@ -97,6 +97,14 @@
            before:bg-gradient-to-r before:from-[#e4e4e7]/50 before:to-[#a1a1aa]/50 before:blur-sm 
            before:transition-all before:duration-1000 before:animate-pulse-subtle;
   }
+  
+  .lazy-image {
+    @apply blur-[2px] transition-all duration-700 ease-out;
+  }
+  
+  .lazy-image.loaded {
+    @apply blur-0;
+  }
 }
 
 .section-spacing {
@@ -133,14 +141,6 @@
   @apply transform scale-x-100 origin-bottom-left;
 }
 
-.lazy-image {
-  @apply blur-xs transition-all duration-700 ease-out;
-}
-
-.lazy-image.loaded {
-  @apply blur-0;
-}
-
 /* Custom animations for page transitions */
 .page-enter {
   @apply opacity-0;
@@ -156,4 +156,12 @@
 
 .page-exit-active {
   @apply opacity-0 transition-opacity duration-300;
+}
+
+/* Ripple Animation for Buttons */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }

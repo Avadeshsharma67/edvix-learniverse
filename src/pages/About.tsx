@@ -152,7 +152,7 @@ const About = () => {
               <ul className="space-y-3">
                 {[
                   'AI and humans working together in education',
-                  'Learning that adapts to each student's needs',
+                  'Learning that adapts to each student\'s needs',
                   'A sustainable educational ecosystem',
                   'Global access to world-class education',
                 ].map((item, index) => (

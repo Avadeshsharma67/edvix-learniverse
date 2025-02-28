@@ -19,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["Inter", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -60,7 +64,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       blur: {
-        xs: "2px", // Adding the missing blur-xs class
+        xs: "2px",
       },
       boxShadow: {
         'elevation': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',

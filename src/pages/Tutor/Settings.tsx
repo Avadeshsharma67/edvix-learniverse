@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +42,13 @@ const TutorSettings = () => {
     toast({
       title: "Notification settings updated",
       description: "Your notification preferences have been saved.",
+    });
+  };
+
+  // Create a wrapper function for logout to handle the event parameter
+  const handleLogout = () => {
+    logout(() => {
+      navigate('/login');
     });
   };
 
@@ -129,7 +135,7 @@ const TutorSettings = () => {
                 <p className="text-sm text-muted-foreground">
                   Once you delete your account, there is no going back. Please be certain.
                 </p>
-                <Button variant="destructive" onClick={logout}>Delete Account</Button>
+                <Button variant="destructive" onClick={handleLogout}>Delete Account</Button>
               </div>
             </CardContent>
           </Card>

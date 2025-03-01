@@ -13,15 +13,6 @@ import TutorMessages from "./pages/Tutor/Messages";
 import TutorCalendar from "./pages/Tutor/Calendar";
 import TutorResources from "./pages/Tutor/Resources";
 import TutorStudents from "./pages/Tutor/Students";
-import TutorCourses from "./pages/Tutor/Courses";
-import TutorSettings from "./pages/Tutor/Settings";
-import StudentDashboard from "./pages/Student/Dashboard";
-import StudentMessages from "./pages/Student/Messages";
-import StudentCalendar from "./pages/Student/Calendar";
-import StudentCourses from "./pages/Student/Courses";
-import StudentAssignments from "./pages/Student/Assignments";
-import StudentTutors from "./pages/Student/Tutors";
-import StudentSettings from "./pages/Student/Settings";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import { ChatProvider } from "./contexts/ChatContext";
@@ -50,17 +41,6 @@ const App = () => (
               <Route path="/tutors/calendar" element={<TutorCalendar />} />
               <Route path="/tutors/resources" element={<TutorResources />} />
               <Route path="/tutors/students" element={<TutorStudents />} />
-              <Route path="/tutors/courses" element={<TutorCourses />} />
-              <Route path="/tutors/settings" element={<TutorSettings />} />
-              
-              {/* Student routes */}
-              <Route path="/students" element={<StudentDashboard />} />
-              <Route path="/students/messages" element={<StudentMessages />} />
-              <Route path="/students/calendar" element={<StudentCalendar />} />
-              <Route path="/students/courses" element={<StudentCourses />} />
-              <Route path="/students/assignments" element={<StudentAssignments />} />
-              <Route path="/students/tutors" element={<StudentTutors />} />
-              <Route path="/students/settings" element={<StudentSettings />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

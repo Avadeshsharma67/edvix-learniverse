@@ -173,7 +173,7 @@ const About = () => {
         </div>
       </section>
       
-      {/* Team Section */}
+      {/* Founder Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -181,58 +181,31 @@ const About = () => {
               element="h2" 
               className="text-3xl sm:text-4xl font-display font-bold mb-6 text-secondary"
             >
-              Meet Our Team
+              Our Founder
             </AnimatedTitle>
             
             <p className="text-lg text-secondary/70">
-              The passionate minds behind EdVix, working to revolutionize education.
+              The visionary behind EdVix, working to revolutionize education.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                name: 'Sarah Johnson, Ph.D.',
-                role: 'Co-Founder & CEO',
-                image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=500&auto=format&fit=crop',
-                bio: 'Former Stanford professor with 15+ years in educational technology.',
-              },
-              {
-                name: 'Michael Chen',
-                role: 'Co-Founder & CTO',
-                image: 'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?q=80&w=500&auto=format&fit=crop',
-                bio: 'Ex-Google AI researcher specializing in personalized learning algorithms.',
-              },
-              {
-                name: 'Rachel Torres',
-                role: 'Chief Education Officer',
-                image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=500&auto=format&fit=crop',
-                bio: 'Experienced educator with expertise in curriculum development and e-learning.',
-              },
-              {
-                name: 'David Lee',
-                role: 'Chief Product Officer',
-                image: 'https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?q=80&w=500&auto=format&fit=crop',
-                bio: 'UX specialist focused on creating engaging, accessible learning experiences.',
-              },
-            ].map((member, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-subtle overflow-hidden">
-                <div className="aspect-[3/4] relative">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                    <p className="text-white text-sm">{member.bio}</p>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-display font-semibold text-secondary">{member.name}</h3>
-                  <p className="text-secondary/70 text-sm">{member.role}</p>
-                </div>
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-xl shadow-subtle overflow-hidden">
+              <div className="aspect-square relative">
+                <img 
+                  src="/lovable-uploads/983f3052-9f1a-46a5-b363-a827e5ab23c7.png" 
+                  alt="Avadesh Sharma" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
+              <div className="p-6 text-center">
+                <h3 className="text-xl font-display font-semibold text-secondary">Avadesh Sharma</h3>
+                <p className="text-secondary/70 text-sm">Founder & CEO</p>
+                <p className="mt-4 text-secondary/70">
+                  Passionate educator and technology enthusiast dedicated to making quality education accessible to everyone around the globe.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

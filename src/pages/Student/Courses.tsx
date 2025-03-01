@@ -88,6 +88,16 @@ const StudentCourses = () => {
     },
   ];
 
+  // Function to handle tab change, properly typed for React
+  const handleExploreClick = () => {
+    // Find the "available" tab trigger by its data value
+    const availableTab = document.querySelector('[data-value="available"]') as HTMLElement;
+    // If found, we can safely call click() on an HTMLElement (not a generic Element)
+    if (availableTab) {
+      availableTab.click();
+    }
+  };
+
   return (
     <DashboardLayout title="Courses">
       <Tabs defaultValue="enrolled" className="space-y-4">
@@ -146,7 +156,7 @@ const StudentCourses = () => {
             <div className="text-center py-12">
               <h3 className="text-lg font-medium">No courses yet</h3>
               <p className="text-muted-foreground mt-1">Browse available courses to get started</p>
-              <Button className="mt-4" onClick={() => document.querySelector('[data-value="available"]')?.click()}>
+              <Button className="mt-4" onClick={handleExploreClick}>
                 Explore Courses
               </Button>
             </div>

@@ -15,9 +15,9 @@ export interface User {
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role: UserRole) => void;
-  register: (name: string, email: string, password: string, role: UserRole) => void;
-  logout: () => void;
+  login: (email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => void;
+  register: (name: string, email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => void;
+  logout: (callback?: () => void) => void;
   loading: boolean;
 }
 
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  const login = (email: string, password: string, role: UserRole) => {
+  const login = (email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
     // Simulate API call
@@ -78,20 +78,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome back!',
           description: `You have successfully logged in as ${user.name}`,
         });
-        // Navigate in the component using the login function instead
+        if (callback) callback(true);
       } else {
         toast({
           title: 'Login failed',
           description: 'Invalid email or password',
           variant: 'destructive',
         });
+        if (callback) callback(false);
       }
       
       setLoading(false);
     }, 1000);
   };
 
-  const register = (name: string, email: string, password: string, role: UserRole) => {
+  const register = (name: string, email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
     // Simulate API call
@@ -107,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: 'Email already in use',
           variant: 'destructive',
         });
+        if (callback) callback(false);
       } else {
         // Create new user
         const newUser: User = {
@@ -128,21 +130,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: `Welcome to EdVix, ${name}!`,
         });
         
-        // Navigate in the component using the register function instead
+        if (callback) callback(true);
       }
       
       setLoading(false);
     }, 1000);
   };
 
-  const logout = () => {
+  const logout = (callback?: () => void) => {
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out',
     });
-    // Navigate in the component using the logout function instead
+    if (callback) callback();
   };
 
   return (

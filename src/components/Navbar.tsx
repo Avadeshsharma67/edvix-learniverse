@@ -1,15 +1,18 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { GraduationCap, Menu, X, Users } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const { currentUser, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -44,6 +47,14 @@ const Navbar = () => {
     };
   }, [isMenuOpen]);
 
+  const handleNavigation = (path: string, role?: string) => {
+    if (role && !isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    navigate(path);
+  };
+
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/marketplace", label: "Marketplace" },
@@ -51,8 +62,18 @@ const Navbar = () => {
   ];
 
   const callToActionLinks = [
-    { to: "/tutors", label: "For Tutors", icon: <GraduationCap className="h-4 w-4 mr-2" /> },
-    { to: "/students", label: "For Students", icon: <Users className="h-4 w-4 mr-2" /> },
+    { 
+      to: "/tutors", 
+      label: "For Tutors", 
+      icon: <GraduationCap className="h-4 w-4 mr-2" />,
+      role: "tutor"
+    },
+    { 
+      to: "/students", 
+      label: "For Students", 
+      icon: <Users className="h-4 w-4 mr-2" />,
+      role: "student" 
+    },
   ];
 
   return (
@@ -98,12 +119,11 @@ const Navbar = () => {
               key={link.to}
               variant={location.pathname === link.to ? "default" : "outline"}
               size="sm"
-              asChild
+              onClick={() => handleNavigation(link.to, link.role)}
+              className="flex items-center"
             >
-              <Link to={link.to} className="flex items-center">
-                {link.icon}
-                {link.label}
-              </Link>
+              {link.icon}
+              {link.label}
             </Button>
           ))}
         </div>
@@ -145,11 +165,11 @@ const Navbar = () => {
             
             <div className="border-t my-2 pt-2">
               {callToActionLinks.map((link) => (
-                <Link
+                <button
                   key={link.to}
-                  to={link.to}
+                  onClick={() => handleNavigation(link.to, link.role)}
                   className={cn(
-                    "flex items-center py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                    "flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors",
                     location.pathname === link.to
                       ? "bg-accent text-accent-foreground"
                       : "hover:bg-muted"
@@ -157,7 +177,7 @@ const Navbar = () => {
                 >
                   {link.icon}
                   {link.label}
-                </Link>
+                </button>
               ))}
             </div>
           </nav>

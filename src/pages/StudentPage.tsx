@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
@@ -14,6 +13,18 @@ import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
+type Assignment = {
+  id: number;
+  title: string;
+  course: string;
+  courseId: number;
+  dueDate: string;
+  status: 'pending' | 'submitted' | 'graded';
+  submittedDate?: string;
+  grade?: string;
+  feedback?: string;
+};
 
 const StudentPage = () => {
   const { setCurrentUser, conversations, getUnreadCount } = useChat();
@@ -55,7 +66,7 @@ const StudentPage = () => {
     },
   ]);
 
-  const [assignments, setAssignments] = useState([
+  const [assignments, setAssignments] = useState<Assignment[]>([
     {
       id: 1,
       title: 'Mathematical Models Research',
@@ -94,10 +105,8 @@ const StudentPage = () => {
   ]);
 
   useEffect(() => {
-    // Set current user as the first student (for demo)
     setCurrentUser(students[0]);
     
-    // Calculate total unread messages
     if (conversations) {
       const total = conversations.reduce((acc, conv) => {
         return acc + getUnreadCount(conv.id);
@@ -105,13 +114,11 @@ const StudentPage = () => {
       setTotalUnread(total);
     }
     
-    // Show welcome toast
     toast({
       title: "Welcome back, Alex!",
       description: `You have ${assignments.filter(a => a.status === 'pending').length} upcoming assignments and ${totalUnread} unread messages.`,
     });
 
-    // Simulate loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -119,7 +126,6 @@ const StudentPage = () => {
     return () => clearTimeout(timer);
   }, [conversations, getUnreadCount, totalUnread]);
 
-  // Simulate course progress updates
   useEffect(() => {
     const interval = setInterval(() => {
       setCourses(prev => 
@@ -137,7 +143,11 @@ const StudentPage = () => {
     setAssignments(prev => 
       prev.map(assignment => {
         if (assignment.id === assignmentId) {
-          return { ...assignment, status: 'submitted', submittedDate: 'Just now' };
+          return { 
+            ...assignment, 
+            status: 'submitted' as const, 
+            submittedDate: 'Just now' 
+          };
         }
         return assignment;
       })

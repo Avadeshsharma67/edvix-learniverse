@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
@@ -22,7 +21,6 @@ const TutorPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [totalUnread, setTotalUnread] = useState(0);
 
-  // Sample data for charts and stats
   const [studentProgress, setStudentProgress] = useState([
     { name: 'Alex Thompson', id: 's1', progress: 78, lastActivity: '2 hours ago', course: 'Advanced Mathematics' },
     { name: 'Jamie Wilson', id: 's2', progress: 62, lastActivity: '1 day ago', course: 'Physics 101' },
@@ -58,10 +56,8 @@ const TutorPage = () => {
   ];
 
   useEffect(() => {
-    // Set current user as the first tutor (for demo)
     setCurrentUser(tutors[0]);
     
-    // Calculate total unread messages
     if (conversations) {
       const total = conversations.reduce((acc, conv) => {
         return acc + getUnreadCount(conv.id);
@@ -69,13 +65,11 @@ const TutorPage = () => {
       setTotalUnread(total);
     }
     
-    // Show welcome toast
     toast({
       title: "Welcome back, Dr. Johnson!",
       description: `You have ${upcomingClasses.filter(c => c.status === 'upcoming').length} upcoming classes and ${totalUnread} unread messages.`,
     });
 
-    // Simulate loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -83,7 +77,6 @@ const TutorPage = () => {
     return () => clearTimeout(timer);
   }, [conversations, getUnreadCount, totalUnread]);
 
-  // Update student progress periodically to simulate real activity
   useEffect(() => {
     const interval = setInterval(() => {
       setStudentProgress(prev => 
@@ -255,7 +248,7 @@ const TutorPage = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Badge variant={student.progress > 75 ? "success" : "outline"}>
+                                <Badge variant={student.progress > 75 ? "default" : "outline"}>
                                   {student.progress}%
                                 </Badge>
                                 <Button 

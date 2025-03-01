@@ -12,6 +12,7 @@ interface StatsCardProps {
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   className?: string;
+  isLoading?: boolean;
 }
 
 export const StatsCard = ({
@@ -22,6 +23,7 @@ export const StatsCard = ({
   trend,
   trendValue,
   className,
+  isLoading = false,
 }: StatsCardProps) => {
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -29,7 +31,10 @@ export const StatsCard = ({
         <div className="flex justify-between items-start">
           <div>
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
+            <h3 className="text-2xl font-bold mt-1">{isLoading ? 
+              <div className="h-8 w-16 bg-muted rounded animate-pulse"></div> : 
+              value}
+            </h3>
             {description && (
               <p className="text-sm text-muted-foreground mt-1">{description}</p>
             )}

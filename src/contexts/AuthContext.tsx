@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
 export type UserRole = 'student' | 'tutor';
@@ -46,7 +45,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const isAuthenticated = !!currentUser;
 
@@ -80,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome back!',
           description: `You have successfully logged in as ${user.name}`,
         });
-        navigate(role === 'tutor' ? '/tutors' : '/students');
+        // Navigate in the component using the login function instead
       } else {
         toast({
           title: 'Login failed',
@@ -130,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: `Welcome to EdVix, ${name}!`,
         });
         
-        navigate(role === 'tutor' ? '/tutors' : '/students');
+        // Navigate in the component using the register function instead
       }
       
       setLoading(false);
@@ -144,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       title: 'Logged out',
       description: 'You have been successfully logged out',
     });
-    navigate('/');
+    // Navigate in the component using the logout function instead
   };
 
   return (

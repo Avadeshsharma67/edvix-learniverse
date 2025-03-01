@@ -17,7 +17,7 @@ const TutorMessages = () => {
     }
     
     if (currentUser?.role !== 'tutor') {
-      navigate('/students');
+      navigate('/');
       return;
     }
   }, [isAuthenticated, currentUser, navigate]);

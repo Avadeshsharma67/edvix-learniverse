@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Users, MessageSquare, BookOpen, Clock, Calendar, BarChart } from 'lucide-react';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,9 +18,9 @@ const TutorDashboard = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [studentProgress, setStudentProgress] = React.useState([
+  const [studentProgress, setStudentProgress] = useState([
     { name: 'Alex Thompson', id: 's1', progress: 78, lastActivity: '2 hours ago', course: 'Advanced Mathematics' },
     { name: 'Jamie Wilson', id: 's2', progress: 62, lastActivity: '1 day ago', course: 'Physics 101' },
     { name: 'Taylor Smith', id: 's3', progress: 91, lastActivity: '4 hours ago', course: 'Computer Science' },
@@ -54,7 +54,14 @@ const TutorDashboard = () => {
     },
   ];
 
-  React.useEffect(() => {
+  const fetchData = () => {
+    // Simulating API calls
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
     // Redirect if not authenticated or not a tutor
     if (!isAuthenticated) {
       navigate('/login');
@@ -62,26 +69,74 @@ const TutorDashboard = () => {
     }
     
     if (currentUser?.role !== 'tutor') {
-      navigate('/students');
+      navigate('/');
       return;
     }
     
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    fetchData();
+    
+    return () => {
+      // Cleanup
+    };
   }, [isAuthenticated, currentUser, navigate]);
 
   const handleStartClass = (classId: number) => {
-    toast({
-      title: "Class Started",
-      description: "Virtual classroom has been initiated. Students are being notified.",
-    });
+    const classToStart = upcomingClasses.find(cls => cls.id === classId);
+    if (classToStart) {
+      toast({
+        title: "Class Started",
+        description: `Virtual classroom for ${classToStart.subject} has been initiated. Students are being notified.`,
+      });
+      
+      // Simulate notification process
+      setTimeout(() => {
+        toast({
+          title: "Classroom Ready",
+          description: `${classToStart.students} students have been notified.`,
+        });
+      }, 1500);
+    }
   };
 
   const handleViewStudentProfile = (studentId: string) => {
-    navigate(`/tutors/students?id=${studentId}`);
+    const student = studentProgress.find(s => s.id === studentId);
+    if (student) {
+      toast({
+        title: "Loading Profile",
+        description: `Opening ${student.name}'s profile...`,
+      });
+      navigate(`/tutors/students?id=${studentId}`);
+    }
+  };
+
+  const handleGenerateInsights = () => {
+    toast({
+      title: "Generating Insights",
+      description: "Analyzing teaching patterns and student performance...",
+    });
+    
+    // Simulate insights generation
+    setTimeout(() => {
+      toast({
+        title: "Insights Ready",
+        description: "Teaching analytics report has been generated successfully.",
+      });
+    }, 2000);
+  };
+
+  const handleDownloadReport = () => {
+    toast({
+      title: "Preparing Report",
+      description: "Your teaching analytics report is being generated...",
+    });
+    
+    // Simulate download process
+    setTimeout(() => {
+      toast({
+        title: "Report Ready",
+        description: "Your teaching analytics report has been downloaded.",
+      });
+    }, 2000);
   };
 
   return (
@@ -179,6 +234,16 @@ const TutorDashboard = () => {
                     </ScrollArea>
                   )}
                 </CardContent>
+                <CardFooter className="pt-0">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => navigate('/tutors/calendar')}
+                  >
+                    View All Classes
+                  </Button>
+                </CardFooter>
               </Card>
 
               <Card>
@@ -243,6 +308,16 @@ const TutorDashboard = () => {
                     </ScrollArea>
                   )}
                 </CardContent>
+                <CardFooter className="pt-0">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => navigate('/tutors/students')}
+                  >
+                    View All Students
+                  </Button>
+                </CardFooter>
               </Card>
             </div>
           </TabsContent>
@@ -261,8 +336,8 @@ const TutorDashboard = () => {
                       Detailed analytics will be displayed here
                     </p>
                     <div className="mt-4 flex gap-2 justify-center">
-                      <Button variant="outline">Download Report</Button>
-                      <Button>Generate Insights</Button>
+                      <Button variant="outline" onClick={handleDownloadReport}>Download Report</Button>
+                      <Button onClick={handleGenerateInsights}>Generate Insights</Button>
                     </div>
                   </div>
                 </div>

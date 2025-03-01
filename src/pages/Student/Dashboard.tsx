@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Users, MessageSquare, BookOpen, Award, Calendar, BarChart } from 'lucide-react';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,9 +18,9 @@ const StudentDashboard = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [courses, setCourses] = React.useState([
+  const [courses, setCourses] = useState([
     { name: 'Advanced Mathematics', id: 'c1', progress: 78, lastActivity: '2 hours ago', tutor: 'Dr. Emily Johnson' },
     { name: 'Physics 101', id: 'c2', progress: 62, lastActivity: '1 day ago', tutor: 'Prof. Michael Brown' },
     { name: 'Computer Science', id: 'c3', progress: 91, lastActivity: '4 hours ago', tutor: 'Sarah Williams' },
@@ -54,7 +54,14 @@ const StudentDashboard = () => {
     },
   ];
 
-  React.useEffect(() => {
+  const fetchData = () => {
+    // Simulating API calls
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
     // Redirect if not authenticated or not a student
     if (!isAuthenticated) {
       navigate('/login');
@@ -66,22 +73,59 @@ const StudentDashboard = () => {
       return;
     }
     
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    fetchData();
+    
+    return () => {
+      // Cleanup
+    };
   }, [isAuthenticated, currentUser, navigate]);
 
   const handleJoinClass = (classId: number) => {
-    toast({
-      title: "Joining Class",
-      description: "Connecting to virtual classroom...",
-    });
+    const classToJoin = upcomingClasses.find(cls => cls.id === classId);
+    if (classToJoin) {
+      toast({
+        title: "Joining Class",
+        description: `Connecting to ${classToJoin.subject} virtual classroom...`,
+      });
+      
+      // Simulate joining process
+      setTimeout(() => {
+        toast({
+          title: "Connected",
+          description: "You have successfully joined the class session.",
+        });
+      }, 1500);
+    }
   };
 
   const handleViewCourse = (courseId: string) => {
-    navigate(`/students/courses?id=${courseId}`);
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+      toast({
+        title: "Opening Course",
+        description: `Loading ${course.name}...`,
+      });
+      navigate(`/students/courses?id=${courseId}`);
+    }
+  };
+
+  const handleDownloadReport = () => {
+    toast({
+      title: "Generating Report",
+      description: "Your learning progress report is being generated...",
+    });
+    
+    // Simulate download process
+    setTimeout(() => {
+      toast({
+        title: "Report Ready",
+        description: "Your learning progress report has been downloaded.",
+      });
+    }, 2000);
+  };
+
+  const handleViewAllCourses = () => {
+    navigate('/students/courses');
   };
 
   return (
@@ -90,7 +134,7 @@ const StudentDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard 
             title="Enrolled Courses" 
-            value="4"
+            value={courses.length.toString()}
             icon={BookOpen}
             isLoading={isLoading}
           />
@@ -260,8 +304,8 @@ const StudentDashboard = () => {
                       Detailed progress analytics will be displayed here
                     </p>
                     <div className="mt-4 flex gap-2 justify-center">
-                      <Button variant="outline">Download Report</Button>
-                      <Button>View All Courses</Button>
+                      <Button variant="outline" onClick={handleDownloadReport}>Download Report</Button>
+                      <Button onClick={handleViewAllCourses}>View All Courses</Button>
                     </div>
                   </div>
                 </div>

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useChat } from '@/contexts/ChatContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -35,7 +36,8 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, conversations, getUnreadCount } = useChat();
+  const { currentUser, logout } = useAuth();
+  const { conversations, getUnreadCount } = useChat();
   const { toast } = useToast();
   const [totalUnread, setTotalUnread] = useState(0);
   const role = currentUser?.role || 'student';
@@ -73,6 +75,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navItems = role === 'tutor' ? tutorNavItems : studentNavItems;
 
   const handleLogout = () => {
+    logout();
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of your account",
@@ -89,6 +92,27 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
     });
   };
 
+  // Check if current path is valid for the user's role
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const validPaths = navItems.map(item => item.path);
+    
+    // Add sub-paths to valid paths
+    const allValidPaths = [...validPaths];
+    validPaths.forEach(path => {
+      allValidPaths.push(`${path}/`);
+    });
+    
+    const isCurrentPathValid = allValidPaths.some(path => 
+      currentPath === path || currentPath.startsWith(`${path}/`)
+    );
+    
+    if (!isCurrentPathValid) {
+      const homePath = role === 'tutor' ? '/tutors' : '/students';
+      navigate(homePath);
+    }
+  }, [location.pathname, navItems, navigate, role]);
+
   return (
     <div className="min-h-screen bg-muted/20 flex">
       {/* Desktop Sidebar */}
@@ -99,7 +123,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         
         <nav className="flex-1 py-6 px-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
             return (
               <Link to={item.path} key={item.name}>
                 <Button
@@ -194,7 +218,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
           
           <nav className="flex-1 py-6 px-4 space-y-1">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
               return (
                 <Link to={item.path} key={item.name}>
                   <Button

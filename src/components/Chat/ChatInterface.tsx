@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronLeft, PlusCircle, Smile, PaperClip, Image, Mic } from 'lucide-react';
+import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChat } from '@/contexts/ChatContext';
 import { Badge } from '@/components/ui/badge';

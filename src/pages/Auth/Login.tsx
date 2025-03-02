@@ -59,10 +59,10 @@ export default function Login() {
       if (success) {
         // Set current user in chat context
         if (activeTab === 'student') {
-          const student = students.find(s => s.email.toLowerCase() === values.email.toLowerCase());
+          const student = students.find(s => s.email?.toLowerCase() === values.email.toLowerCase());
           if (student) setCurrentUser(student);
         } else {
-          const tutor = tutors.find(t => t.email.toLowerCase() === values.email.toLowerCase());
+          const tutor = tutors.find(t => t.email?.toLowerCase() === values.email.toLowerCase());
           if (tutor) setCurrentUser(tutor);
         }
         

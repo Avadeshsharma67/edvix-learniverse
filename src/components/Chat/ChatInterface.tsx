@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronLeft } from 'lucide-react';
+import { Send, ChevronLeft, PlusCircle, Smile, PaperClip, Image, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChat } from '@/contexts/ChatContext';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,15 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { formatDistanceToNow } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/components/ui/use-toast';
 
 export const ChatInterface = () => {
   const {
@@ -21,7 +30,9 @@ export const ChatInterface = () => {
   } = useChat();
   const [messageText, setMessageText] = useState('');
   const messageEndRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   // Mark messages as read when conversation becomes active
   useEffect(() => {
@@ -35,14 +46,12 @@ export const ChatInterface = () => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConversation?.messages]);
 
-  // Update isMobile state on window resize
+  // Focus input when conversation changes
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (activeConversation && !isMobile) {
+      inputRef.current?.focus();
+    }
+  }, [activeConversation, isMobile]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,9 +73,23 @@ export const ChatInterface = () => {
   const formatTime = (date: Date) => {
     return formatDistanceToNow(date, { addSuffix: true });
   };
+  
+  const handleAttachment = () => {
+    toast({
+      title: "Feature coming soon",
+      description: "Attachment functionality will be available in the next update",
+    });
+  };
 
   if (!currentUser) {
-    return <div className="flex justify-center items-center h-full">Please select a user role first.</div>;
+    return (
+      <div className="flex justify-center items-center h-full p-6 text-center">
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Please select a user role first</h3>
+          <p className="text-muted-foreground">Log in as either a student or tutor to access messaging</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -75,8 +98,20 @@ export const ChatInterface = () => {
       <div 
         className={`w-full md:w-80 border-r ${isMobile && activeConversation ? 'hidden' : 'flex flex-col'}`}
       >
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-semibold text-lg">Conversations</h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming soon", description: "New conversation feature will be available soon" })}>
+                  <PlusCircle className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Start new conversation</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <ScrollArea className="flex-1">
           {conversations
@@ -95,7 +130,7 @@ export const ChatInterface = () => {
                   onClick={() => setActiveConversation(conversation)}
                 >
                   <Avatar>
-                    <AvatarImage src={otherParticipant?.avatar} />
+                    <AvatarImage src={otherParticipant?.avatar} alt={otherParticipant?.name || 'User'} />
                     <AvatarFallback>
                       {otherParticipant?.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
@@ -135,12 +170,13 @@ export const ChatInterface = () => {
             <Avatar>
               <AvatarImage 
                 src={getOtherParticipant(activeConversation.id)?.avatar} 
+                alt={getOtherParticipant(activeConversation.id)?.name || 'User'}
               />
               <AvatarFallback>
                 {getOtherParticipant(activeConversation.id)?.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <h3 className="font-semibold">
                 {getOtherParticipant(activeConversation.id)?.name}
               </h3>
@@ -148,87 +184,146 @@ export const ChatInterface = () => {
                 {getOtherParticipant(activeConversation.id)?.role === 'tutor' ? 'Tutor' : 'Student'}
               </p>
             </div>
+            <div className="hidden md:flex gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => toast({ 
+                        title: "Audio call", 
+                        description: "Audio call feature coming soon" 
+                      })}
+                    >
+                      <Mic className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Start audio call</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
 
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {activeConversation.messages.map((message, index) => {
-                const isCurrentUser = message.senderId === currentUser.id;
-                const sender = activeConversation.participants.find(p => p.id === message.senderId);
-                
-                // Add date separator if needed
-                const showDateSeparator = index === 0 || (
-                  new Date(message.timestamp).toDateString() !== 
-                  new Date(activeConversation.messages[index - 1].timestamp).toDateString()
-                );
-                
-                return (
-                  <React.Fragment key={message.id}>
-                    {showDateSeparator && (
-                      <div className="flex items-center py-2">
-                        <Separator className="flex-1" />
-                        <span className="px-2 text-xs text-muted-foreground">
-                          {new Date(message.timestamp).toLocaleDateString()}
-                        </span>
-                        <Separator className="flex-1" />
-                      </div>
-                    )}
-                    <div 
-                      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                    >
+              {activeConversation.messages.length === 0 ? (
+                <div className="flex justify-center items-center h-32 text-center">
+                  <div className="text-muted-foreground">
+                    <p>No messages yet</p>
+                    <p className="text-sm">Start the conversation by sending a message</p>
+                  </div>
+                </div>
+              ) : (
+                activeConversation.messages.map((message, index) => {
+                  const isCurrentUser = message.senderId === currentUser.id;
+                  const sender = activeConversation.participants.find(p => p.id === message.senderId);
+                  
+                  // Add date separator if needed
+                  const showDateSeparator = index === 0 || (
+                    new Date(message.timestamp).toDateString() !== 
+                    new Date(activeConversation.messages[index - 1].timestamp).toDateString()
+                  );
+                  
+                  return (
+                    <React.Fragment key={message.id}>
+                      {showDateSeparator && (
+                        <div className="flex items-center py-2">
+                          <Separator className="flex-1" />
+                          <span className="px-2 text-xs text-muted-foreground">
+                            {new Date(message.timestamp).toLocaleDateString()}
+                          </span>
+                          <Separator className="flex-1" />
+                        </div>
+                      )}
                       <div 
-                        className={`flex items-start max-w-[80%] ${isCurrentUser ? 'flex-row-reverse' : ''}`}
+                        className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                       >
-                        <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src={sender?.avatar} />
-                          <AvatarFallback>
-                            {sender?.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
                         <div 
-                          className={`rounded-lg px-4 py-2 ${
-                            isCurrentUser 
-                              ? 'bg-accent text-accent-foreground mr-2' 
-                              : 'bg-muted ml-2'
-                          }`}
+                          className={`flex items-start max-w-[80%] ${isCurrentUser ? 'flex-row-reverse' : ''}`}
                         >
-                          <p>{message.text}</p>
-                          <p className={`text-xs mt-1 ${
-                            isCurrentUser ? 'text-accent-foreground/80' : 'text-muted-foreground'
-                          }`}>
-                            {new Date(message.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                            {isCurrentUser && (
-                              <span className="ml-1">
-                                {message.read ? '• Read' : '• Sent'}
-                              </span>
-                            )}
-                          </p>
+                          <Avatar className="h-8 w-8 mr-2">
+                            <AvatarImage src={sender?.avatar} alt={sender?.name || 'User'} />
+                            <AvatarFallback>
+                              {sender?.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div 
+                            className={`rounded-lg px-4 py-2 ${
+                              isCurrentUser 
+                                ? 'bg-accent text-accent-foreground mr-2' 
+                                : 'bg-muted ml-2'
+                            }`}
+                          >
+                            <p>{message.text}</p>
+                            <p className={`text-xs mt-1 ${
+                              isCurrentUser ? 'text-accent-foreground/80' : 'text-muted-foreground'
+                            }`}>
+                              {new Date(message.timestamp).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                              {isCurrentUser && (
+                                <span className="ml-1">
+                                  {message.read ? '• Read' : '• Sent'}
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
+                    </React.Fragment>
+                  );
+                })
+              )}
               <div ref={messageEndRef} />
             </div>
           </ScrollArea>
 
           {/* Message Input */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t flex gap-2">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 bg-muted rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-            />
-            <Button type="submit" size="icon">
-              <Send className="h-5 w-5" />
-            </Button>
+          <form onSubmit={handleSendMessage} className="p-4 border-t">
+            <div className="flex gap-2 items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" className="rounded-full text-muted-foreground">
+                    <PlusCircle className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2" side="top" align="start">
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={handleAttachment}>
+                      <Image className="h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleAttachment}>
+                      <PaperClip className="h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleAttachment}>
+                      <Mic className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Type your message..."
+                className="flex-1 bg-muted rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+              />
+              
+              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground" onClick={() => toast({ title: "Emoji", description: "Emoji picker coming soon" })}>
+                <Smile className="h-5 w-5" />
+              </Button>
+              
+              <Button type="submit" size="icon" disabled={messageText.trim() === ''}>
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
           </form>
         </div>
       ) : (

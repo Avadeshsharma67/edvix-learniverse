@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 
 type User = {
   id: string;
@@ -32,6 +33,7 @@ interface ChatContextType {
   getUnreadCount: (conversationId: string) => number;
   markAsRead: (conversationId: string) => void;
   initializeChat: () => void;
+  totalUnreadMessages: number;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -135,9 +137,41 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>(sampleConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+  const { toast } = useToast();
 
   const initializeChat = () => {
-    console.log('Chat initialized');
+    if (!currentUser) {
+      console.log('Chat not initialized: No current user');
+      return;
+    }
+    
+    console.log(`Chat initialized for ${currentUser.name}`);
+    calculateTotalUnread();
+    
+    // Find first conversation for current user and set as active if none is selected
+    if (!activeConversation) {
+      const firstConversation = conversations.find(
+        conv => conv.participants.some(p => p.id === currentUser.id)
+      );
+      if (firstConversation) {
+        setActiveConversation(firstConversation);
+        markAsRead(firstConversation.id);
+      }
+    }
+  };
+
+  const calculateTotalUnread = () => {
+    if (!currentUser) return;
+    
+    const total = conversations.reduce((acc, conv) => {
+      const unread = conv.messages.filter(
+        m => m.senderId !== currentUser.id && !m.read
+      ).length;
+      return acc + unread;
+    }, 0);
+    
+    setTotalUnreadMessages(total);
   };
 
   const sendMessage = (text: string) => {
@@ -172,6 +206,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (updatedActiveConv) {
       setActiveConversation(updatedActiveConv);
     }
+
+    // Show toast for sent message
+    toast({
+      title: "Message sent",
+      description: "Your message has been delivered",
+      duration: 1500,
+    });
 
     // Simulate response after delay (for demo purposes)
     if (currentUser.role === 'student') {
@@ -219,6 +260,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return conv;
         })
       );
+      
+      // Show notification for new message
+      if (currentUser && currentUser.role === 'student') {
+        toast({
+          title: `New message from ${tutor.name}`,
+          description: randomResponse.substring(0, 60) + (randomResponse.length > 60 ? '...' : ''),
+          duration: 3000,
+        });
+      }
+      
+      calculateTotalUnread();
     }, 2000 + Math.random() * 2000); // Random delay between 2-4 seconds
   };
 
@@ -260,6 +312,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return conv;
         })
       );
+      
+      // Show notification for new message
+      if (currentUser && currentUser.role === 'tutor') {
+        toast({
+          title: `New message from ${student.name}`,
+          description: randomResponse.substring(0, 60) + (randomResponse.length > 60 ? '...' : ''),
+          duration: 3000,
+        });
+      }
+      
+      calculateTotalUnread();
     }, 2000 + Math.random() * 2000); // Random delay between 2-4 seconds
   };
 
@@ -293,6 +356,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return conv;
       })
     );
+    
+    calculateTotalUnread();
   };
 
   // Keep active conversation in sync with conversations state
@@ -307,6 +372,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [conversations, activeConversation]);
 
+  // Update unread count whenever conversations change
+  useEffect(() => {
+    calculateTotalUnread();
+  }, [conversations, currentUser]);
+
   return (
     <ChatContext.Provider
       value={{
@@ -319,6 +389,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getUnreadCount,
         markAsRead,
         initializeChat,
+        totalUnreadMessages,
       }}
     >
       {children}

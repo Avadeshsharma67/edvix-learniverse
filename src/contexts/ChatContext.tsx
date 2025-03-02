@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type User = {
@@ -32,6 +31,7 @@ interface ChatContextType {
   setCurrentUser: (user: User) => void;
   getUnreadCount: (conversationId: string) => number;
   markAsRead: (conversationId: string) => void;
+  initializeChat: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -135,6 +135,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>(sampleConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+
+  const initializeChat = () => {
+    console.log('Chat initialized');
+  };
 
   const sendMessage = (text: string) => {
     if (!currentUser || !activeConversation) return;
@@ -314,6 +318,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCurrentUser,
         getUnreadCount,
         markAsRead,
+        initializeChat,
       }}
     >
       {children}

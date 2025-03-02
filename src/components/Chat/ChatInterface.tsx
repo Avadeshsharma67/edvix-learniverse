@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,19 +33,16 @@ export const ChatInterface = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
-  // Mark messages as read when conversation becomes active
   useEffect(() => {
     if (activeConversation) {
       markAsRead(activeConversation.id);
     }
   }, [activeConversation]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConversation?.messages]);
 
-  // Focus input when conversation changes
   useEffect(() => {
     if (activeConversation && !isMobile) {
       inputRef.current?.focus();
@@ -94,7 +90,6 @@ export const ChatInterface = () => {
 
   return (
     <div className="flex h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] overflow-hidden bg-background rounded-lg border">
-      {/* Conversation List */}
       <div 
         className={`w-full md:w-80 border-r ${isMobile && activeConversation ? 'hidden' : 'flex flex-col'}`}
       >
@@ -157,10 +152,8 @@ export const ChatInterface = () => {
         </ScrollArea>
       </div>
 
-      {/* Active Conversation */}
       {activeConversation ? (
         <div className={`flex-1 flex flex-col ${isMobile && activeConversation ? 'block' : ''}`}>
-          {/* Conversation Header */}
           <div className="p-4 border-b flex items-center gap-3">
             {isMobile && (
               <Button variant="ghost" size="icon" onClick={() => setActiveConversation(null)}>
@@ -207,7 +200,6 @@ export const ChatInterface = () => {
             </div>
           </div>
 
-          {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {activeConversation.messages.length === 0 ? (
@@ -222,7 +214,6 @@ export const ChatInterface = () => {
                   const isCurrentUser = message.senderId === currentUser.id;
                   const sender = activeConversation.participants.find(p => p.id === message.senderId);
                   
-                  // Add date separator if needed
                   const showDateSeparator = index === 0 || (
                     new Date(message.timestamp).toDateString() !== 
                     new Date(activeConversation.messages[index - 1].timestamp).toDateString()
@@ -283,7 +274,6 @@ export const ChatInterface = () => {
             </div>
           </ScrollArea>
 
-          {/* Message Input */}
           <form onSubmit={handleSendMessage} className="p-4 border-t">
             <div className="flex gap-2 items-center">
               <Popover>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -10,6 +9,14 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  bio?: string;
+  notifications?: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  theme?: string;
+  language?: string;
 }
 
 interface AuthContextType {
@@ -19,6 +26,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => void;
   logout: (callback?: () => void) => void;
   loading: boolean;
+  updateUserProfile: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -148,6 +156,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (callback) callback();
   };
 
+  const updateUserProfile = async (userData: Partial<User>): Promise<void> => {
+    setLoading(true);
+    
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (currentUser) {
+          const updatedUser = { ...currentUser, ...userData };
+          setCurrentUser(updatedUser);
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          
+          toast({
+            title: 'Profile updated',
+            description: 'Your profile has been updated successfully',
+          });
+        }
+        
+        setLoading(false);
+        resolve();
+      }, 1000);
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -157,6 +188,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         loading,
+        updateUserProfile,
       }}
     >
       {children}

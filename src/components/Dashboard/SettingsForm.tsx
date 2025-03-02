@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +12,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface FormData {
+  name: string;
+  email: string;
+  bio: string;
+  avatar: string;
+  notifications: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  theme: string;
+  language: string;
+}
+
 export function SettingsForm() {
   const { currentUser, updateUserProfile } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     bio: '',
@@ -37,11 +52,9 @@ export function SettingsForm() {
         bio: currentUser.bio || '',
         avatar: currentUser.avatar || '',
         notifications: {
-          ...(currentUser.notifications || {
-            email: true,
-            push: true,
-            sms: false,
-          }),
+          email: currentUser.notifications?.email ?? true,
+          push: currentUser.notifications?.push ?? true,
+          sms: currentUser.notifications?.sms ?? false,
         },
         theme: currentUser.theme || 'light',
         language: currentUser.language || 'english',
@@ -49,43 +62,46 @@ export function SettingsForm() {
     }
   }, [currentUser]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
-      ...(prevData || {}),
+      ...prevData,
       [name]: value,
     }));
   };
 
-  const handleNotificationChange = (key, value) => {
+  const handleNotificationChange = (key: keyof typeof formData.notifications, value: boolean) => {
     setFormData((prevData) => ({
-      ...(prevData || {}),
+      ...prevData,
       notifications: {
-        ...(prevData?.notifications || {}),
+        ...prevData.notifications,
         [key]: value,
       },
     }));
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: keyof FormData, value: string) => {
     setFormData((prevData) => ({
-      ...(prevData || {}),
+      ...prevData,
       [name]: value,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Update user profile
-      if (updateUserProfile) {
-        await updateUserProfile(formData);
-      }
+      await updateUserProfile({
+        name: formData.name,
+        email: formData.email,
+        bio: formData.bio,
+        avatar: formData.avatar,
+        notifications: formData.notifications,
+        theme: formData.theme,
+        language: formData.language,
+      });
       
       toast({
         title: "Settings updated",

@@ -6,12 +6,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const TutorMessages = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const { initializeChat } = useChat();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Redirect if not authenticated or not a tutor
@@ -37,7 +39,7 @@ const TutorMessages = () => {
 
   return (
     <DashboardLayout title="Messages">
-      <div className="card rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className={`card rounded-lg border bg-card text-card-foreground shadow-sm ${isMobile ? 'h-[calc(100vh-120px)]' : 'h-[calc(100vh-180px)]'}`}>
         <ChatInterface />
       </div>
     </DashboardLayout>

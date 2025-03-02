@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -288,7 +289,7 @@ export const ChatInterface = () => {
                       <Image className="h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={handleAttachment}>
-                      <PaperClip className="h-5 w-5" />
+                      <Paperclip className="h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={handleAttachment}>
                       <Mic className="h-5 w-5" />

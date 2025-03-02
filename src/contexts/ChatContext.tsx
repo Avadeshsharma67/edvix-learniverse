@@ -6,6 +6,7 @@ type User = {
   name: string;
   avatar: string;
   role: 'tutor' | 'student';
+  email?: string; // Add email property as optional
 };
 
 type Message = {
@@ -40,16 +41,16 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 // Sample data
 const tutors: User[] = [
-  { id: 't1', name: 'Dr. Emily Johnson', avatar: '/placeholder.svg', role: 'tutor' },
-  { id: 't2', name: 'Prof. Michael Chen', avatar: '/placeholder.svg', role: 'tutor' },
-  { id: 't3', name: 'Dr. Sophia Rodriguez', avatar: '/placeholder.svg', role: 'tutor' },
+  { id: 't1', name: 'Dr. Emily Johnson', avatar: '/placeholder.svg', role: 'tutor', email: 'emily@example.com' },
+  { id: 't2', name: 'Prof. Michael Chen', avatar: '/placeholder.svg', role: 'tutor', email: 'michael@example.com' },
+  { id: 't3', name: 'Dr. Sophia Rodriguez', avatar: '/placeholder.svg', role: 'tutor', email: 'sophia@example.com' },
 ];
 
 const students: User[] = [
-  { id: 's1', name: 'Alex Thompson', avatar: '/placeholder.svg', role: 'student' },
-  { id: 's2', name: 'Jamie Wilson', avatar: '/placeholder.svg', role: 'student' },
-  { id: 's3', name: 'Taylor Smith', avatar: '/placeholder.svg', role: 'student' },
-  { id: 's4', name: 'Jordan Lee', avatar: '/placeholder.svg', role: 'student' },
+  { id: 's1', name: 'Alex Thompson', avatar: '/placeholder.svg', role: 'student', email: 'alex@example.com' },
+  { id: 's2', name: 'Jamie Wilson', avatar: '/placeholder.svg', role: 'student', email: 'jamie@example.com' },
+  { id: 's3', name: 'Taylor Smith', avatar: '/placeholder.svg', role: 'student', email: 'taylor@example.com' },
+  { id: 's4', name: 'Jordan Lee', avatar: '/placeholder.svg', role: 'student', email: 'jordan@example.com' },
 ];
 
 // Initial conversations

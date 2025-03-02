@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import CourseDetailsModal from './CourseDetailsModal';
 
 interface CourseCardProps {
   id: string;
@@ -34,7 +35,9 @@ const CourseCard = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -86,24 +89,29 @@ const CourseCard = ({
       minimumFractionDigits: 2,
     }).format(price);
   };
+
+  const handleCardClick = () => {
+    setShowModal(true);
+  };
   
   return (
-    <div
-      ref={cardRef}
-      className={`group relative bg-white rounded-xl overflow-hidden shadow-card 
-                 transition-all duration-500 transform opacity-0 translate-y-8
+    <>
+      <div
+        ref={cardRef}
+        className={`group relative bg-white rounded-xl overflow-hidden shadow-card 
+                 transition-all duration-500 transform opacity-0 translate-y-8 cursor-pointer
                  ${isLoaded ? 'opacity-100 translate-y-0' : ''} ${className}`}
-      style={{
-        transform: isHovered
-          ? `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.02, 1.02, 1.02)`
-          : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-        transition: 'transform 0.4s ease-out',
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={resetRotation}
-    >
-      <Link to={`/course/${id}`}>
+        style={{
+          transform: isHovered
+            ? `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.02, 1.02, 1.02)`
+            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+          transition: 'transform 0.4s ease-out',
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={resetRotation}
+        onClick={handleCardClick}
+      >
         <div className="relative aspect-video overflow-hidden">
           <img
             src={image}
@@ -161,11 +169,30 @@ const CourseCard = ({
             )}
           </div>
         </div>
-      </Link>
-      
-      {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-    </div>
+        
+        {/* Hover effect overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      </div>
+
+      {/* Course Details Modal */}
+      <CourseDetailsModal 
+        open={showModal} 
+        onOpenChange={setShowModal} 
+        course={{
+          id,
+          title,
+          instructor,
+          description,
+          image,
+          category,
+          price,
+          originalPrice,
+          rating,
+          studentsCount,
+          isRevamped
+        }}
+      />
+    </>
   );
 };
 

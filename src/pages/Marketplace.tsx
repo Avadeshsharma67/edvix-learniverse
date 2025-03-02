@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import CourseCard from '@/components/CourseCard';
 import AnimatedTitle from '@/components/AnimatedTitle';
 import AnimatedButton from '@/components/AnimatedButton';
+import { useNavigate } from 'react-router-dom';
 
 type CourseType = {
   id: string;
@@ -19,7 +19,6 @@ type CourseType = {
   isRevamped?: boolean;
 };
 
-// Sample data for courses
 const allCourses: CourseType[] = [
   {
     id: '1',
@@ -127,7 +126,6 @@ const allCourses: CourseType[] = [
   },
 ];
 
-// Categories for filtering
 const categories = [
   'All Categories',
   'AI & ML',
@@ -145,22 +143,19 @@ const Marketplace = () => {
   const [filteredCourses, setFilteredCourses] = useState<CourseType[]>(allCourses);
   const [showRevampedOnly, setShowRevampedOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   
-  // Filter courses based on category, revamped status, and search query
   useEffect(() => {
     let filtered = [...allCourses];
     
-    // Filter by category
     if (selectedCategory !== 'All Categories') {
       filtered = filtered.filter(course => course.category === selectedCategory);
     }
     
-    // Filter by revamped status
     if (showRevampedOnly) {
       filtered = filtered.filter(course => course.isRevamped);
     }
     
-    // Filter by search query
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -195,11 +190,9 @@ const Marketplace = () => {
             </p>
           </div>
           
-          {/* Search and Filters */}
           <div className="mb-12 max-w-4xl mx-auto">
             <div className="bg-white p-6 rounded-xl shadow-subtle">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Search */}
                 <div className="md:col-span-1">
                   <label htmlFor="search" className="block text-sm font-medium text-secondary/80 mb-2">Search Courses</label>
                   <input
@@ -212,7 +205,6 @@ const Marketplace = () => {
                   />
                 </div>
                 
-                {/* Category Filter */}
                 <div className="md:col-span-1">
                   <label htmlFor="category" className="block text-sm font-medium text-secondary/80 mb-2">Category</label>
                   <select
@@ -227,7 +219,6 @@ const Marketplace = () => {
                   </select>
                 </div>
                 
-                {/* Revamped Filter */}
                 <div className="md:col-span-1 flex items-end">
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
@@ -243,7 +234,6 @@ const Marketplace = () => {
             </div>
           </div>
           
-          {/* Courses Grid */}
           <div className="mb-12">
             {filteredCourses.length === 0 ? (
               <div className="text-center py-12">
@@ -276,7 +266,6 @@ const Marketplace = () => {
             )}
           </div>
           
-          {/* Call to Action */}
           <div className="bg-white rounded-xl p-8 shadow-subtle text-center">
             <h3 className="text-xl sm:text-2xl font-display font-semibold mb-4 text-secondary">
               Ready to Start Learning?
@@ -285,10 +274,10 @@ const Marketplace = () => {
               Join thousands of students already using EdVix to transform their learning journey and advance their careers.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <AnimatedButton>
+              <AnimatedButton onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 Browse All Courses
               </AnimatedButton>
-              <AnimatedButton variant="outline">
+              <AnimatedButton variant="outline" onClick={() => navigate('/register')}>
                 Become a Tutor
               </AnimatedButton>
             </div>

@@ -109,30 +109,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           variant: 'destructive',
         });
         if (callback) callback(false);
-      } else {
-        // Create new user
-        const newUser: User = {
-          id: `${role.charAt(0)}${mockUsers.length + 1}`,
-          name,
-          email,
-          role,
-          avatar: '/placeholder.svg',
-        };
-        
-        // In a real app, we would add the user to the database
-        // For this demo, we'll just set them as the current user
-        mockUsers.push(newUser);
-        setCurrentUser(newUser);
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-        
-        toast({
-          title: 'Registration successful',
-          description: `Welcome to EdVix, ${name}!`,
-        });
-        
-        if (callback) callback(true);
+        setLoading(false);
+        return;
       }
       
+      // Create new user
+      const newUser: User = {
+        id: `${role.charAt(0)}${mockUsers.length + 1}`,
+        name,
+        email,
+        role,
+        avatar: '/placeholder.svg',
+      };
+      
+      // In a real app, we would add the user to the database
+      // For this demo, we'll add to the mockUsers array and set as current user
+      mockUsers.push(newUser);
+      setCurrentUser(newUser);
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      
+      toast({
+        title: 'Registration successful',
+        description: `Welcome to EdVix, ${name}!`,
+      });
+      
+      if (callback) callback(true);
       setLoading(false);
     }, 1000);
   };

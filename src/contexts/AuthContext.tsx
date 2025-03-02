@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -39,6 +40,14 @@ const mockUsers: User[] = [
     email: 'alex@example.com',
     role: 'student',
     avatar: '/placeholder.svg',
+    bio: 'Student passionate about mathematics and physics',
+    notifications: {
+      email: true,
+      push: true,
+      sms: false
+    },
+    theme: 'light',
+    language: 'en'
   },
   {
     id: 't1',
@@ -46,6 +55,14 @@ const mockUsers: User[] = [
     email: 'emily@example.com',
     role: 'tutor',
     avatar: '/placeholder.svg',
+    bio: 'PhD in Mathematics with 10+ years of teaching experience',
+    notifications: {
+      email: true,
+      push: true,
+      sms: true
+    },
+    theme: 'dark',
+    language: 'en'
   },
 ];
 

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,10 @@ import Register from "./pages/Auth/Register";
 import { ChatProvider } from "./contexts/ChatContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
+import TutorCourses from "./pages/Tutor/Courses";
+import TutorSettings from "./pages/Tutor/Settings";
+import StudentAssignments from "./pages/Student/Assignments";
+import StudentSettings from "./pages/Student/Settings";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +75,14 @@ const AppRoutes = () => {
         path="/tutors/students" 
         element={<ProtectedRoute element={<TutorStudents />} requiredRole="tutor" />} 
       />
+      <Route 
+        path="/tutors/courses" 
+        element={<ProtectedRoute element={<TutorCourses />} requiredRole="tutor" />} 
+      />
+      <Route 
+        path="/tutors/settings" 
+        element={<ProtectedRoute element={<TutorSettings />} requiredRole="tutor" />} 
+      />
       
       {/* Student routes */}
       <Route 
@@ -89,6 +100,14 @@ const AppRoutes = () => {
       <Route 
         path="/students/courses" 
         element={<ProtectedRoute element={<StudentCourses />} requiredRole="student" />} 
+      />
+      <Route 
+        path="/students/assignments" 
+        element={<ProtectedRoute element={<StudentAssignments />} requiredRole="student" />} 
+      />
+      <Route 
+        path="/students/settings" 
+        element={<ProtectedRoute element={<StudentSettings />} requiredRole="student" />} 
       />
       
       {/* Catch-all route */}

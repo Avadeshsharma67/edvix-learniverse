@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,36 +16,54 @@ interface ChatMessage {
 }
 
 interface ChatInterfaceProps {
-  conversationId: string;
-  onBack: () => void;
+  conversationId?: string;
+  onBack?: () => void;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);
-  const { sendMessage, getMessages, markAsRead, getConversation } = useChat();
-  const [ собеседник, setСобеседник ] = useState<{id: string, name: string} | null>(null);
+  const { conversations, activeConversation, setActiveConversation, sendMessage, getMessages, markAsRead, getConversation } = useChat();
+  const [собеседник, setСобеседник] = useState<{id: string, name: string} | null>(null);
+  
+  // Find the first conversation if none is specified
+  useEffect(() => {
+    if (!conversationId && conversations.length > 0 && !activeConversation) {
+      setActiveConversation(conversations[0]);
+    }
+  }, [conversationId, conversations, activeConversation, setActiveConversation]);
 
   useEffect(() => {
     const loadMessages = async () => {
-      const initialMessages = await getMessages(conversationId);
-      setMessages(initialMessages);
+      if (conversationId) {
+        const initialMessages = await getMessages(conversationId);
+        setMessages(initialMessages);
+      } else if (activeConversation) {
+        setMessages(activeConversation.messages);
+      }
     };
 
     loadMessages();
-  }, [conversationId, getMessages]);
+  }, [conversationId, activeConversation, getMessages]);
 
   useEffect(() => {
     const loadConversation = async () => {
-      const conversation = await getConversation(conversationId);
-      if (conversation) {
-        setСобеседник({id: conversation.userIds[0], name: conversation.name});
+      if (conversationId) {
+        const conversation = await getConversation(conversationId);
+        if (conversation) {
+          setСобеседник({id: conversation.userIds[0], name: conversation.name});
+        }
+      } else if (activeConversation) {
+        setСобеседник({
+          id: activeConversation.userIds[0],
+          name: activeConversation.name
+        });
       }
     };
 
     loadConversation();
-  }, [conversationId, getConversation]);
+  }, [conversationId, activeConversation, getConversation]);
 
   useEffect(() => {
     // Scroll to bottom on new messages
@@ -53,23 +72,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
 
   useEffect(() => {
     // Mark messages as read when the chat interface is opened
-    markAsRead(conversationId);
-  }, [conversationId, markAsRead]);
+    if (conversationId) {
+      markAsRead(conversationId);
+    } else if (activeConversation) {
+      markAsRead(activeConversation.id);
+    }
+  }, [conversationId, activeConversation, markAsRead]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim()) {
-      await sendMessage(conversationId, newMessage);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          id: Date.now().toString(), // Mock ID
-          senderId: 'me', // Assuming current user is 'me'
-          text: newMessage,
-          timestamp: new Date(),
-        },
-      ]);
-      setNewMessage('');
-      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const targetConversationId = conversationId || (activeConversation?.id || '');
+      if (targetConversationId) {
+        await sendMessage(targetConversationId, newMessage);
+        setNewMessage('');
+        chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -77,10 +94,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="border-b p-4 flex items-center">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <div className="ml-3 flex-1">
+        {onBack && (
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+        )}
+        <div className={cn("ml-3 flex-1", !onBack && "ml-0")}>
           <div className="font-semibold">{собеседник?.name || 'Unknown'}</div>
           <div className="text-sm text-muted-foreground">Online</div>
         </div>
@@ -151,7 +170,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
             <Button variant="ghost" size="icon">
               <Mic className="h-5 w-5" />
             </Button>
-            <Button variant="primary" size="icon" onClick={handleSendMessage}>
+            <Button variant="default" size="icon" onClick={handleSendMessage}>
               <Send className="h-5 w-5" />
             </Button>
           </div>

@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
-import { ChatInterface } from '@/components/Chat/ChatInterface';
+import ChatInterface from '@/components/Chat/ChatInterface';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useNavigate } from 'react-router-dom';

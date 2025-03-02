@@ -6,7 +6,7 @@ type User = {
   name: string;
   avatar: string;
   role: 'tutor' | 'student';
-  email?: string; // Add email property as optional
+  email?: string; 
 };
 
 type Message = {
@@ -19,6 +19,8 @@ type Message = {
 
 type Conversation = {
   id: string;
+  userIds: string[]; // For easier lookup of conversation participants
+  name: string;
   participants: User[];
   messages: Message[];
   lastActive: Date;
@@ -29,12 +31,14 @@ interface ChatContextType {
   conversations: Conversation[];
   activeConversation: Conversation | null;
   setActiveConversation: (conversation: Conversation | null) => void;
-  sendMessage: (text: string) => void;
+  sendMessage: (conversationId: string, text: string) => Promise<void>;
   setCurrentUser: (user: User) => void;
   getUnreadCount: (conversationId: string) => number;
   markAsRead: (conversationId: string) => void;
   initializeChat: () => void;
   totalUnreadMessages: number;
+  getMessages: (conversationId: string) => Promise<Message[]>;
+  getConversation: (conversationId: string) => Promise<Conversation | null>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -57,6 +61,8 @@ const students: User[] = [
 const sampleConversations: Conversation[] = [
   {
     id: 'c1',
+    userIds: ['t1', 's1'],
+    name: 'Alex Thompson',
     participants: [tutors[0], students[0]],
     lastActive: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
     messages: [
@@ -78,6 +84,8 @@ const sampleConversations: Conversation[] = [
   },
   {
     id: 'c2',
+    userIds: ['t2', 's2'],
+    name: 'Jamie Wilson',
     participants: [tutors[1], students[1]],
     lastActive: new Date(Date.now() - 1000 * 60 * 120), // 2 hours ago
     messages: [
@@ -92,6 +100,8 @@ const sampleConversations: Conversation[] = [
   },
   {
     id: 'c3',
+    userIds: ['t3', 's3'],
+    name: 'Taylor Smith',
     participants: [tutors[2], students[2]],
     lastActive: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
     messages: [
@@ -113,6 +123,8 @@ const sampleConversations: Conversation[] = [
   },
   {
     id: 'c4',
+    userIds: ['t1', 's4'],
+    name: 'Jordan Lee',
     participants: [tutors[0], students[3]],
     lastActive: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
     messages: [
@@ -175,8 +187,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTotalUnreadMessages(total);
   };
 
-  const sendMessage = (text: string) => {
-    if (!currentUser || !activeConversation) return;
+  const sendMessage = async (conversationId: string, text: string) => {
+    if (!currentUser) return;
 
     const newMessage: Message = {
       id: `m${Date.now()}`,
@@ -187,7 +199,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const updatedConversations = conversations.map((conv) => {
-      if (conv.id === activeConversation.id) {
+      if (conv.id === conversationId) {
         return {
           ...conv,
           messages: [...conv.messages, newMessage],
@@ -201,7 +213,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Update active conversation
     const updatedActiveConv = updatedConversations.find(
-      (conv) => conv.id === activeConversation.id
+      (conv) => conv.id === conversationId
     );
     
     if (updatedActiveConv) {
@@ -217,9 +229,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Simulate response after delay (for demo purposes)
     if (currentUser.role === 'student') {
-      simulateTutorResponse(activeConversation.id);
+      simulateTutorResponse(conversationId);
     } else {
-      simulateStudentResponse(activeConversation.id);
+      simulateStudentResponse(conversationId);
     }
   };
 
@@ -361,7 +373,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     calculateTotalUnread();
   };
 
-  // Keep active conversation in sync with conversations state
+  const getMessages = async (conversationId: string): Promise<Message[]> => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    return conversation?.messages || [];
+  };
+
+  const getConversation = async (conversationId: string): Promise<Conversation | null> => {
+    return conversations.find(c => c.id === conversationId) || null;
+  };
+
   useEffect(() => {
     if (activeConversation) {
       const updatedActiveConv = conversations.find(
@@ -373,7 +393,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [conversations, activeConversation]);
 
-  // Update unread count whenever conversations change
   useEffect(() => {
     calculateTotalUnread();
   }, [conversations, currentUser]);
@@ -391,6 +410,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         markAsRead,
         initializeChat,
         totalUnreadMessages,
+        getMessages,
+        getConversation,
       }}
     >
       {children}

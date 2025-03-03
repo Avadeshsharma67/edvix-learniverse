@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, ArrowRight } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -15,10 +15,14 @@ import { useToast } from '@/components/ui/use-toast';
 import { UserRole } from '@/contexts/AuthContext';
 import { useChat } from '@/contexts/ChatContext';
 import { tutors, students } from '@/contexts/ChatContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters long' })
+    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
+    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
+    .regex(/[0-9]/, { message: 'Password must contain at least one number' }),
 });
 
 export default function Login() {
@@ -27,6 +31,7 @@ export default function Login() {
   const { setCurrentUser } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [showVerificationAlert, setShowVerificationAlert] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,10 +45,10 @@ export default function Login() {
   useEffect(() => {
     if (activeTab === 'student') {
       form.setValue('email', 'alex@example.com');
-      form.setValue('password', 'password123');
+      form.setValue('password', 'Password123');
     } else {
       form.setValue('email', 'emily@example.com');
-      form.setValue('password', 'password123');
+      form.setValue('password', 'Password123');
     }
   }, [activeTab, form]);
 
@@ -55,35 +60,45 @@ export default function Login() {
   }, [isAuthenticated, activeTab, navigate]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    login(values.email, values.password, activeTab, (success) => {
-      if (success) {
-        // Set current user in chat context
-        if (activeTab === 'student') {
-          const student = students.find(s => s.email?.toLowerCase() === values.email.toLowerCase());
-          if (student) setCurrentUser(student);
+    // Simulate verification message
+    setShowVerificationAlert(true);
+    
+    // Simulate delayed login to represent verification checks
+    setTimeout(() => {
+      login(values.email, values.password, activeTab, (success) => {
+        if (success) {
+          // Set current user in chat context
+          if (activeTab === 'student') {
+            const student = students.find(s => s.email?.toLowerCase() === values.email.toLowerCase());
+            if (student) setCurrentUser(student);
+          } else {
+            const tutor = tutors.find(t => t.email?.toLowerCase() === values.email.toLowerCase());
+            if (tutor) setCurrentUser(tutor);
+          }
+          
+          setShowVerificationAlert(false);
+          
+          // Redirect to appropriate dashboard
+          navigate(activeTab === 'tutor' ? '/tutors' : '/students');
+          
+          // Show welcome toast
+          toast({
+            title: "Login successful",
+            description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
+          });
         } else {
-          const tutor = tutors.find(t => t.email?.toLowerCase() === values.email.toLowerCase());
-          if (tutor) setCurrentUser(tutor);
+          setShowVerificationAlert(false);
         }
-        
-        // Redirect to appropriate dashboard
-        navigate(activeTab === 'tutor' ? '/tutors' : '/students');
-        
-        // Show welcome toast
-        toast({
-          title: "Login successful",
-          description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
-        });
-      }
-    });
+      });
+    }, 1500);
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-lg animate-fade-in">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-zinc-100 to-zinc-50 dark:from-zinc-900 dark:to-zinc-800 px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-lg animate-fade-in bg-white dark:bg-zinc-900">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
-            <GraduationCap className="h-6 w-6 text-accent" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <GraduationCap className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back to EdVix</CardTitle>
           <CardDescription>Enter your credentials to sign in to your account</CardDescription>
@@ -91,9 +106,20 @@ export default function Login() {
         <CardContent>
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as UserRole)} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="student" className="data-[state=active]:bg-accent data-[state=active]:text-white">Student</TabsTrigger>
-              <TabsTrigger value="tutor" className="data-[state=active]:bg-accent data-[state=active]:text-white">Tutor</TabsTrigger>
+              <TabsTrigger value="student" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Student</TabsTrigger>
+              <TabsTrigger value="tutor" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tutor</TabsTrigger>
             </TabsList>
+            
+            {showVerificationAlert && (
+              <Alert className="mb-4 border-amber-400 bg-amber-50 dark:bg-amber-950 dark:border-amber-900">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertTitle className="text-amber-800 dark:text-amber-300">Verifying your credentials</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-400">
+                  Please wait while we verify your account...
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <TabsContent value="student">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -129,6 +155,15 @@ export default function Login() {
                       </FormItem>
                     )}
                   />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Secure login</span>
+                    </div>
+                    <Link to="#" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign in as Student'} 
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -171,6 +206,15 @@ export default function Login() {
                       </FormItem>
                     )}
                   />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Secure login</span>
+                    </div>
+                    <Link to="#" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign in as Tutor'}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -188,7 +232,7 @@ export default function Login() {
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/register" className="text-accent hover:underline font-medium">
+            <Link to="/register" className="text-primary hover:underline font-medium">
               Sign up
             </Link>
           </div>

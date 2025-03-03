@@ -30,11 +30,14 @@ const StudentMessages = () => {
     // Initialize chat
     initializeChat?.();
     
-    // Show welcome toast
-    toast({
-      title: "Messages Loaded",
-      description: "You can now chat with your tutors.",
-    });
+    // Silent initialization without toast to prevent notification blinking issue
+    if (!localStorage.getItem('chat_initialized')) {
+      toast({
+        title: "Messages Ready",
+        description: "You can now chat with your tutors.",
+      });
+      localStorage.setItem('chat_initialized', 'true');
+    }
   }, [isAuthenticated, currentUser, navigate, initializeChat, toast]);
 
   return (

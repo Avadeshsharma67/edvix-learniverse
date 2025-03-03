@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic } from 'lucide-react';
+import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface ChatMessage {
   id: string;
   senderId: string;
   text: string;
   timestamp: Date;
+  status?: 'sent' | 'delivered' | 'read';
 }
 
 interface ChatInterfaceProps {
@@ -23,9 +25,10 @@ interface ChatInterfaceProps {
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const { conversations, activeConversation, setActiveConversation, sendMessage, getMessages, markAsRead, getConversation } = useChat();
-  const [собеседник, setСобеседник] = useState<{id: string, name: string} | null>(null);
+  const [chatPartner, setChatPartner] = useState<{id: string, name: string, status?: string, lastSeen?: Date} | null>(null);
   
   // Find the first conversation if none is specified
   useEffect(() => {
@@ -52,12 +55,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
       if (conversationId) {
         const conversation = await getConversation(conversationId);
         if (conversation) {
-          setСобеседник({id: conversation.userIds[0], name: conversation.name});
+          setChatPartner({
+            id: conversation.userIds[0], 
+            name: conversation.name,
+            status: Math.random() > 0.5 ? 'online' : 'offline',
+            lastSeen: conversation.lastActive
+          });
         }
       } else if (activeConversation) {
-        setСобеседник({
+        setChatPartner({
           id: activeConversation.userIds[0],
-          name: activeConversation.name
+          name: activeConversation.name,
+          status: Math.random() > 0.5 ? 'online' : 'offline',
+          lastSeen: activeConversation.lastActive
         });
       }
     };
@@ -83,6 +93,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     if (newMessage.trim()) {
       const targetConversationId = conversationId || (activeConversation?.id || '');
       if (targetConversationId) {
+        setIsTyping(false);
         await sendMessage(targetConversationId, newMessage);
         setNewMessage('');
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,90 +101,159 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     }
   };
 
+  const getMessageStatus = (message: ChatMessage) => {
+    // Only show status for messages sent by current user
+    if (message.senderId !== 'me') return null;
+    
+    const status = message.status || 'sent';
+    
+    switch(status) {
+      case 'sent':
+        return <Check className="h-3.5 w-3.5 text-muted-foreground" />;
+      case 'delivered':
+        return <CheckCheck className="h-3.5 w-3.5 text-muted-foreground" />;
+      case 'read':
+        return <CheckCheck className="h-3.5 w-3.5 text-blue-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const formatMessageTime = (date: Date) => {
+    return format(date, 'h:mm a');
+  };
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    
+    // Simulate "typing" indicator
+    if (e.target.value && !isTyping) {
+      setIsTyping(true);
+    } else if (!e.target.value) {
+      setIsTyping(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b p-4 flex items-center">
+      <div className="border-b p-4 flex items-center bg-card shadow-sm">
         {onBack && (
-          <Button variant="ghost" size="icon" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
             <ChevronLeft className="h-5 w-5" />
           </Button>
         )}
-        <div className={cn("ml-3 flex-1", !onBack && "ml-0")}>
-          <div className="font-semibold">{собеседник?.name || 'Unknown'}</div>
-          <div className="text-sm text-muted-foreground">Online</div>
-        </div>
-        <Avatar>
+        <Avatar className="h-10 w-10 border-2 border-primary/10">
           <AvatarImage src="https://github.com/shadcn.png" alt="Profile" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback>{chatPartner?.name?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
+        <div className={cn("ml-3 flex-1")}>
+          <div className="font-semibold">{chatPartner?.name || 'Unknown'}</div>
+          <div className="text-xs text-muted-foreground">
+            {chatPartner?.status === 'online' ? (
+              <span className="flex items-center">
+                <span className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></span>
+                Online
+              </span>
+            ) : (
+              <span>
+                Last seen {chatPartner?.lastSeen ? formatMessageTime(chatPartner.lastSeen) : 'recently'}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <ScrollArea className="h-full">
+      <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/30 p-4">
+        <ScrollArea className="h-full pr-4">
           <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex flex-col",
-                  message.senderId === 'me' ? 'items-end' : 'items-start'
-                )}
-              >
+            {messages.length === 0 ? (
+              <div className="flex justify-center items-center h-32 text-muted-foreground text-sm">
+                No messages yet. Start a conversation!
+              </div>
+            ) : (
+              messages.map((message) => (
                 <div
+                  key={message.id}
                   className={cn(
-                    "px-4 py-2 rounded-xl inline-block",
-                    message.senderId === 'me'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground'
+                    "flex flex-col max-w-[75%]",
+                    message.senderId === 'me' ? 'ml-auto' : 'mr-auto'
                   )}
                 >
-                  {message.text}
+                  <div
+                    className={cn(
+                      "px-4 py-2.5 rounded-2xl relative",
+                      message.senderId === 'me'
+                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                        : 'bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-tl-none'
+                    )}
+                  >
+                    {message.text}
+                  </div>
+                  <div className={cn(
+                    "flex items-center mt-1 text-xs text-muted-foreground",
+                    message.senderId === 'me' ? 'justify-end mr-1' : 'ml-1'
+                  )}>
+                    <span>{formatMessageTime(message.timestamp)}</span>
+                    {message.senderId === 'me' && (
+                      <span className="ml-1">{getMessageStatus(message)}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {message.senderId === 'me' ? 'You' : 'Them'} • {message.timestamp.toLocaleTimeString()}
+              ))
+            )}
+            {isTyping && chatPartner && (
+              <div className="flex max-w-[75%] mr-auto">
+                <div className="px-4 py-2.5 bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-2xl rounded-tl-none">
+                  <div className="flex space-x-1">
+                    <div className="h-2 w-2 rounded-full bg-gray-300 animate-pulse"></div>
+                    <div className="h-2 w-2 rounded-full bg-gray-300 animate-pulse delay-100"></div>
+                    <div className="h-2 w-2 rounded-full bg-gray-300 animate-pulse delay-200"></div>
+                  </div>
                 </div>
               </div>
-            ))}
+            )}
             <div ref={chatBottomRef} />
           </div>
         </ScrollArea>
       </div>
 
       {/* Input */}
-      <div className="border-t p-4">
+      <div className="border-t p-3 bg-card">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <PlusCircle className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <PlusCircle className="h-5 w-5 text-muted-foreground" />
           </Button>
-          <Input
-            placeholder="Type your message here"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSendMessage();
-              }
-            }}
-          />
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <Smile className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Paperclip className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Image className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Mic className="h-5 w-5" />
-            </Button>
-            <Button variant="default" size="icon" onClick={handleSendMessage}>
-              <Send className="h-5 w-5" />
-            </Button>
+          <div className="flex-1 relative rounded-full bg-background">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Smile className="h-5 w-5 text-muted-foreground cursor-pointer" />
+            </div>
+            <Input
+              placeholder="Type your message here"
+              value={newMessage}
+              onChange={handleTyping}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSendMessage();
+                }
+              }}
+              className="rounded-full pl-10 pr-20 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 border-muted"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+              <Paperclip className="h-5 w-5 text-muted-foreground cursor-pointer" />
+              <Image className="h-5 w-5 text-muted-foreground cursor-pointer" />
+              <Mic className="h-5 w-5 text-muted-foreground cursor-pointer" />
+            </div>
           </div>
+          <Button 
+            variant="primary" 
+            size="icon" 
+            className="rounded-full h-11 w-11 bg-primary hover:bg-primary/90 transition-colors" 
+            onClick={handleSendMessage}
+          >
+            <Send className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </div>

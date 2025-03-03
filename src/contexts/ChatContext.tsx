@@ -15,6 +15,7 @@ type Message = {
   text: string;
   timestamp: Date;
   read: boolean;
+  status?: 'sent' | 'delivered' | 'read';
 };
 
 type Conversation = {
@@ -177,14 +178,25 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const calculateTotalUnread = () => {
     if (!currentUser) return;
     
-    const total = conversations.reduce((acc, conv) => {
+    let total = 0;
+    
+    const relevantConversations = conversations.filter(conv => 
+      conv.participants.some(p => p.id === currentUser.id)
+    );
+    
+    total = relevantConversations.reduce((acc, conv) => {
       const unread = conv.messages.filter(
         m => m.senderId !== currentUser.id && !m.read
       ).length;
       return acc + unread;
     }, 0);
     
-    setTotalUnreadMessages(total);
+    // Debounce total update to prevent UI jitter
+    const timer = setTimeout(() => {
+      setTotalUnreadMessages(total);
+    }, 300);
+    
+    return () => clearTimeout(timer);
   };
 
   const sendMessage = async (conversationId: string, text: string) => {
@@ -196,6 +208,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       text,
       timestamp: new Date(),
       read: false,
+      status: 'sent',
     };
 
     const updatedConversations = conversations.map((conv) => {
@@ -220,14 +233,57 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveConversation(updatedActiveConv);
     }
 
-    // Show toast for sent message
-    toast({
-      title: "Message sent",
-      description: "Your message has been delivered",
-      duration: 1500,
-    });
+    // Update message status to 'delivered' after a short delay
+    setTimeout(() => {
+      setConversations(prevConversations => 
+        prevConversations.map(conv => {
+          if (conv.id === conversationId) {
+            return {
+              ...conv,
+              messages: conv.messages.map(msg => {
+                if (msg.id === newMessage.id) {
+                  return { ...msg, status: 'delivered' };
+                }
+                return msg;
+              })
+            };
+          }
+          return conv;
+        })
+      );
+    }, 500);
+    
+    // Update message status to 'read' after another delay
+    setTimeout(() => {
+      setConversations(prevConversations => 
+        prevConversations.map(conv => {
+          if (conv.id === conversationId) {
+            return {
+              ...conv,
+              messages: conv.messages.map(msg => {
+                if (msg.id === newMessage.id) {
+                  return { ...msg, status: 'read' };
+                }
+                return msg;
+              })
+            };
+          }
+          return conv;
+        })
+      );
+    }, 1500);
 
-    // Simulate response after delay (for demo purposes)
+    // Show toast for sent message - but only once per session to prevent repeated notifications
+    if (!sessionStorage.getItem('message_sent_toast')) {
+      toast({
+        title: "Message sent",
+        description: "Your message has been delivered",
+        duration: 1500,
+      });
+      sessionStorage.setItem('message_sent_toast', 'true');
+    }
+
+    // Simulate response after delay
     if (currentUser.role === 'student') {
       simulateTutorResponse(conversationId);
     } else {

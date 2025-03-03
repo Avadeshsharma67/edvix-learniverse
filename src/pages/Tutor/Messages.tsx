@@ -27,17 +27,8 @@ const TutorMessages = () => {
       return;
     }
 
-    // Initialize chat
+    // Initialize chat only once without repeated notifications
     initializeChat?.();
-    
-    // Silent initialization without toast to prevent notification blinking issue
-    if (!localStorage.getItem('chat_initialized')) {
-      toast({
-        title: "Messages Ready",
-        description: "You can now chat with your students.",
-      });
-      localStorage.setItem('chat_initialized', 'true');
-    }
   }, [isAuthenticated, currentUser, navigate, initializeChat, toast]);
 
   return (

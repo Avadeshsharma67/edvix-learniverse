@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 type User = {
@@ -152,7 +153,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [conversations, setConversations] = useState<Conversation[]>(sampleConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+  const [chatInitialized, setChatInitialized] = useState(false);
   const { toast } = useToast();
+  const toastShownRef = useRef(false);
 
   const initializeChat = () => {
     if (!currentUser) {
@@ -171,6 +174,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (firstConversation) {
         setActiveConversation(firstConversation);
         markAsRead(firstConversation.id);
+      }
+    }
+    
+    if (!chatInitialized) {
+      setChatInitialized(true);
+      
+      // Only show the initialization toast once per session
+      if (!sessionStorage.getItem('chat_initialized') && !toastShownRef.current) {
+        toastShownRef.current = true;
+        toast({
+          title: currentUser.role === 'student' ? "Messages Ready" : "Messages Ready",
+          description: currentUser.role === 'student' 
+            ? "You can now chat with your tutors."
+            : "You can now chat with your students.",
+        });
+        sessionStorage.setItem('chat_initialized', 'true');
       }
     }
   };
@@ -272,16 +291,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
       );
     }, 1500);
-
-    // Show toast for sent message - but only once per session to prevent repeated notifications
-    if (!sessionStorage.getItem('message_sent_toast')) {
-      toast({
-        title: "Message sent",
-        description: "Your message has been delivered",
-        duration: 1500,
-      });
-      sessionStorage.setItem('message_sent_toast', 'true');
-    }
 
     // Simulate response after delay
     if (currentUser.role === 'student') {

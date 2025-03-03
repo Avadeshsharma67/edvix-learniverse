@@ -4,7 +4,7 @@ import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { SettingsForm } from '@/components/Dashboard/SettingsForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, ShieldCheck, UserCircle, Lock, Mail } from 'lucide-react';
+import { Bell, ShieldCheck, UserCircle, Lock } from 'lucide-react';
 
 const TutorSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -41,19 +41,19 @@ const TutorSettings = () => {
               </TabsList>
               
               <TabsContent value="profile">
-                <SettingsForm section="profile" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="account">
-                <SettingsForm section="account" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="notifications">
-                <SettingsForm section="notifications" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="security">
-                <SettingsForm section="security" />
+                <SettingsForm />
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   const { conversations, activeConversation, setActiveConversation, sendMessage, getMessages, markAsRead, getConversation } = useChat();
   const [chatPartner, setChatPartner] = useState<{id: string, name: string, status?: string, lastSeen?: Date} | null>(null);
   
-  // Find the first conversation if none is specified
   useEffect(() => {
     if (!conversationId && conversations.length > 0 && !activeConversation) {
       setActiveConversation(conversations[0]);
@@ -76,12 +74,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   }, [conversationId, activeConversation, getConversation]);
 
   useEffect(() => {
-    // Scroll to bottom on new messages
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    // Mark messages as read when the chat interface is opened
     if (conversationId) {
       markAsRead(conversationId);
     } else if (activeConversation) {
@@ -102,7 +98,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   };
 
   const getMessageStatus = (message: ChatMessage) => {
-    // Only show status for messages sent by current user
     if (message.senderId !== 'me') return null;
     
     const status = message.status || 'sent';
@@ -126,7 +121,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
     
-    // Simulate "typing" indicator
     if (e.target.value && !isTyping) {
       setIsTyping(true);
     } else if (!e.target.value) {
@@ -136,7 +130,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="border-b p-4 flex items-center bg-card shadow-sm">
         {onBack && (
           <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
@@ -164,7 +157,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/30 p-4">
         <ScrollArea className="h-full pr-4">
           <div className="space-y-4">
@@ -219,7 +211,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
         </ScrollArea>
       </div>
 
-      {/* Input */}
       <div className="border-t p-3 bg-card">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="rounded-full">
@@ -247,7 +238,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
             </div>
           </div>
           <Button 
-            variant="primary" 
+            variant="default" 
             size="icon" 
             className="rounded-full h-11 w-11 bg-primary hover:bg-primary/90 transition-colors" 
             onClick={handleSendMessage}

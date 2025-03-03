@@ -1,9 +1,12 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import CourseDetailsModal from './CourseDetailsModal';
+import React, { useState } from 'react';
+import { StarIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { toast } from "@/components/ui/use-toast";
 
-interface CourseCardProps {
+type CourseCardProps = {
   id: string;
   title: string;
   instructor: string;
@@ -15,8 +18,7 @@ interface CourseCardProps {
   rating: number;
   studentsCount: number;
   isRevamped?: boolean;
-  className?: string;
-}
+};
 
 const CourseCard = ({
   id,
@@ -30,168 +32,190 @@ const CourseCard = ({
   rating,
   studentsCount,
   isRevamped = false,
-  className = ""
 }: CourseCardProps) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
   
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setTimeout(() => {
-            setIsLoaded(true);
-          }, Math.random() * 300);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-    
-    return () => observer.disconnect();
-  }, []);
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    // Calculate distance from center (-1 to 1)
-    const x = (e.clientX - centerX) / (rect.width / 2);
-    const y = (e.clientY - centerY) / (rect.height / 2);
-    
-    // Limit rotation to a subtle amount
-    setRotation({
-      x: -y * 2, // Reversed for natural feel
-      y: x * 2,
-    });
-  };
-  
-  const resetRotation = () => {
-    setRotation({ x: 0, y: 0 });
-    setIsHovered(false);
-  };
-  
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatIndianPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
+      currency: 'INR',
+      maximumFractionDigits: 0
     }).format(price);
   };
 
-  const handleCardClick = () => {
-    setShowModal(true);
+  const handleEnroll = () => {
+    toast({
+      title: "Enrollment successful!",
+      description: `You've enrolled in "${title}"`,
+    });
+    setIsOpen(false);
   };
+  
+  const discountPercentage = originalPrice 
+    ? Math.round(((originalPrice - price) / originalPrice) * 100) 
+    : 0;
   
   return (
     <>
-      <div
-        ref={cardRef}
-        className={`group relative bg-white rounded-xl overflow-hidden shadow-card 
-                 transition-all duration-500 transform opacity-0 translate-y-8 cursor-pointer
-                 ${isLoaded ? 'opacity-100 translate-y-0' : ''} ${className}`}
-        style={{
-          transform: isHovered
-            ? `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.02, 1.02, 1.02)`
-            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-          transition: 'transform 0.4s ease-out',
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={resetRotation}
-        onClick={handleCardClick}
+      <div 
+        className="flex flex-col h-full rounded-xl overflow-hidden bg-white border border-gray-100 shadow-subtle transition-all duration-300 hover:shadow-md hover:-translate-y-1"
       >
-        <div className="relative aspect-video overflow-hidden">
-          <img
-            src={image}
-            alt={title}
-            className={`w-full h-full object-cover transition-all duration-700 ${isLoaded ? 'blur-0 scale-100' : 'blur-md scale-110'}`}
-          />
-          
-          {/* Revamped badge */}
-          {isRevamped && (
-            <div className="absolute top-3 left-3 bg-secondary text-white text-xs font-medium px-2 py-1 rounded-full">
-              Revamped
-            </div>
-          )}
-          
-          {/* Category chip */}
-          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-secondary text-xs font-medium px-2.5 py-1 rounded-full">
+        <div className="relative">
+          <div className="aspect-video bg-gray-200 overflow-hidden">
+            <img
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+          <Badge 
+            variant="secondary" 
+            className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-xs"
+          >
             {category}
-          </div>
+          </Badge>
+          {isRevamped && (
+            <Badge 
+              className="absolute top-3 right-3 bg-primary/90 backdrop-blur-sm text-white text-xs"
+            >
+              Revamped
+            </Badge>
+          )}
         </div>
         
-        <div className="p-5">
-          {/* Rating */}
-          <div className="flex items-center mb-2">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-yellow-500">
-                <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-              </svg>
-              <span className="ml-1 text-sm font-medium">{rating.toFixed(1)}</span>
-            </div>
-            <span className="mx-2 text-gray-300">•</span>
-            <span className="text-xs text-secondary/70">{studentsCount.toLocaleString()} students</span>
-          </div>
-          
-          {/* Title */}
-          <h3 className="text-lg font-display font-semibold mb-1 line-clamp-2 group-hover:text-accent transition-colors duration-300">
-            {title}
-          </h3>
-          
-          {/* Instructor */}
-          <p className="text-sm text-secondary/70 mb-3">By {instructor}</p>
-          
-          {/* Description */}
-          <p className="text-sm text-secondary/80 mb-4 line-clamp-2">{description}</p>
-          
-          {/* Price */}
-          <div className="flex items-center">
-            <span className="text-lg font-semibold">{formatPrice(price)}</span>
-            {originalPrice && (
-              <span className="ml-2 text-sm text-secondary/60 line-through">{formatPrice(originalPrice)}</span>
-            )}
-            {originalPrice && (
-              <span className="ml-2 bg-green-50 text-green-600 text-xs font-medium px-2 py-0.5 rounded">
-                {Math.round((1 - price / originalPrice) * 100)}% off
+        <div className="flex-1 p-5 flex flex-col justify-between">
+          <div>
+            <h3 className="font-display font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
+            <p className="text-sm text-secondary/60 mb-2">By {instructor}</p>
+            <p className="text-sm text-secondary/70 mb-4 line-clamp-2">{description}</p>
+            
+            <div className="flex items-center mb-4">
+              <div className="flex items-center text-yellow-500 mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <StarIcon 
+                    key={i} 
+                    className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-current' : 'fill-gray-200 text-gray-200'}`} 
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-secondary/60">
+                {rating} ({studentsCount} students)
               </span>
-            )}
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex items-baseline mb-4">
+              <span className="font-display font-bold text-lg mr-2">{formatIndianPrice(price)}</span>
+              {originalPrice && (
+                <>
+                  <span className="text-sm text-secondary/50 line-through mr-2">{formatIndianPrice(originalPrice)}</span>
+                  <span className="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded">
+                    {discountPercentage}% off
+                  </span>
+                </>
+              )}
+            </div>
+            
+            <Button 
+              className="w-full"
+              onClick={() => setIsOpen(true)}
+            >
+              View Details
+            </Button>
           </div>
         </div>
-        
-        {/* Hover effect overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
-
-      {/* Course Details Modal */}
-      <CourseDetailsModal 
-        open={showModal} 
-        onOpenChange={setShowModal} 
-        course={{
-          id,
-          title,
-          instructor,
-          description,
-          image,
-          category,
-          price,
-          originalPrice,
-          rating,
-          studentsCount,
-          isRevamped
-        }}
-      />
+      
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{title}</DialogTitle>
+            <DialogDescription className="text-sm text-secondary/60">
+              By {instructor} • {category}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <img src={image} alt={title} className="w-full h-48 object-cover rounded-md" />
+              
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Course Overview</h4>
+                <p className="text-sm text-secondary/70">{description}</p>
+              </div>
+              
+              <div className="flex items-center mt-4">
+                <div className="flex items-center text-yellow-500 mr-2">
+                  {[...Array(5)].map((_, i) => (
+                    <StarIcon 
+                      key={i} 
+                      className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-current' : 'fill-gray-200 text-gray-200'}`} 
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-secondary/60">
+                  {rating} ({studentsCount} students)
+                </span>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">What You'll Learn</h4>
+              <ul className="text-sm text-secondary/70 space-y-1">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Comprehensive understanding of {category} concepts</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Practical exercises and real-world projects</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Access to exclusive learning resources</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Certificate of completion</span>
+                </li>
+              </ul>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                <div className="flex items-baseline mb-2">
+                  <span className="font-display font-bold text-xl mr-2">{formatIndianPrice(price)}</span>
+                  {originalPrice && (
+                    <>
+                      <span className="text-sm text-secondary/50 line-through mr-2">{formatIndianPrice(originalPrice)}</span>
+                      <span className="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded">
+                        {discountPercentage}% off
+                      </span>
+                    </>
+                  )}
+                </div>
+                
+                <Button 
+                  className="w-full mb-2"
+                  onClick={handleEnroll}
+                >
+                  Enroll Now
+                </Button>
+                
+                <p className="text-xs text-center text-secondary/50">
+                  30-day money-back guarantee
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="sm:justify-between">
+            <p className="text-xs text-secondary/50">Course ID: {id}</p>
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

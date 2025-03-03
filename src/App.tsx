@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,14 @@ import TutorCourses from "./pages/Tutor/Courses";
 import TutorSettings from "./pages/Tutor/Settings";
 import StudentAssignments from "./pages/Student/Assignments";
 import StudentSettings from "./pages/Student/Settings";
+import Courses from "./pages/Courses";
+import Pricing from "./pages/Pricing";
+import Blog from "./pages/Blog";
+import HelpCenter from "./pages/HelpCenter";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
+import Faq from "./pages/Faq";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +62,16 @@ const AppRoutes = () => {
       <Route path="/about" element={<About />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      
+      {/* New routes for additional pages */}
+      <Route path="/courses" element={<Courses />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/help" element={<HelpCenter />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/faq" element={<Faq />} />
       
       {/* Tutor routes */}
       <Route 

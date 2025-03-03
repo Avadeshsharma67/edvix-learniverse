@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { Check, HelpCircle } from 'lucide-react';
@@ -179,7 +178,7 @@ const PricingPage = () => {
                   
                   <AnimatedButton 
                     className={`w-full ${plan.recommended ? 'bg-secondary text-white' : ''}`}
-                    variant={plan.recommended ? 'default' : 'outline'}
+                    variant={plan.recommended ? 'secondary' : 'outline'}
                     onClick={() => handleSubscribe(plan.name)}
                   >
                     {plan.buttonText}

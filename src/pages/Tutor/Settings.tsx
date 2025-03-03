@@ -41,19 +41,19 @@ const TutorSettings = () => {
               </TabsList>
               
               <TabsContent value="profile">
-                <SettingsForm section="profile" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="account">
-                <SettingsForm section="account" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="notifications">
-                <SettingsForm section="notifications" />
+                <SettingsForm />
               </TabsContent>
               
               <TabsContent value="security">
-                <SettingsForm section="security" />
+                <SettingsForm />
               </TabsContent>
             </Tabs>
           </CardContent>

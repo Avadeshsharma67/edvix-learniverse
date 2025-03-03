@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { Search, ArrowUpDown, MessageSquare, BarChart3, FileText, UserPlus, X, ChevronLeft, Mail } from 'lucide-react';
+import { 
+  Search, ArrowUpDown, MessageSquare, BarChart3, FileText, UserPlus, X, ChevronLeft, Mail, 
+  Upload, Download, FileSpreadsheet, CheckCircle, AlertCircle
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface Student {
   id: string;
@@ -47,6 +51,12 @@ const TutorStudents = () => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const selectedStudentId = searchParams.get('id');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<Student[]>([]);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const [students, setStudents] = useState<Student[]>([
     {
@@ -112,7 +122,6 @@ const TutorStudents = () => {
   ]);
 
   React.useEffect(() => {
-    // Redirect if not authenticated or not a tutor
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -165,7 +174,6 @@ const TutorStudents = () => {
         comparison = avgProgressA - avgProgressB;
         break;
       case 'lastActive':
-        // This is a simplistic comparison, in a real app you would use actual dates
         comparison = a.lastActive.localeCompare(b.lastActive);
         break;
       default:
@@ -189,10 +197,118 @@ const TutorStudents = () => {
     return Math.round(student.courses.reduce((acc, course) => acc + course.progress, 0) / student.courses.length);
   };
 
+  const handleBatchUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        setTimeout(() => {
+          setUploadProgress(50);
+
+          setTimeout(() => {
+            setUploadProgress(80);
+            
+            const newStudents: Student[] = [
+              {
+                id: `s${Date.now()}`,
+                name: 'Morgan Lee',
+                email: 'morgan.lee@example.com',
+                avatar: '/placeholder.svg',
+                courses: [{ id: 1, name: 'Advanced Mathematics', progress: 0 }],
+                lastActive: 'Never',
+                status: 'inactive',
+                assignments: []
+              },
+              {
+                id: `s${Date.now() + 1}`,
+                name: 'Casey Jones',
+                email: 'casey.j@example.com',
+                avatar: '/placeholder.svg',
+                courses: [{ id: 2, name: 'Physics 101', progress: 0 }],
+                lastActive: 'Never',
+                status: 'inactive',
+                assignments: []
+              }
+            ];
+            
+            setUploadPreview(newStudents);
+            setIsPreviewOpen(true);
+            setUploadProgress(100);
+            setIsUploading(false);
+            
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }, 1000);
+        }, 1000);
+      } catch (error) {
+        setUploadError('Failed to parse the file. Please ensure it\'s a valid CSV or Excel file.');
+        setIsUploading(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    };
+    
+    reader.onerror = () => {
+      setUploadError('Error reading the file. Please try again.');
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const confirmUpload = () => {
+    setStudents(prev => [...prev, ...uploadPreview]);
+    setIsPreviewOpen(false);
+    setUploadPreview([]);
+    
+    toast({
+      title: "Students added successfully",
+      description: `${uploadPreview.length} students have been added to your class.`,
+    });
+  };
+
+  const cancelUpload = () => {
+    setIsPreviewOpen(false);
+    setUploadPreview([]);
+  };
+
+  const downloadTemplate = () => {
+    const templateData = "Name,Email,Course\nJohn Doe,john.doe@example.com,Advanced Mathematics\nJane Smith,jane.smith@example.com,Physics 101";
+    const blob = new Blob([templateData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'student_upload_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Template downloaded",
+      description: "Fill in the template and upload it to add multiple students at once.",
+    });
+  };
+
   return (
     <DashboardLayout title="Students">
       {selectedStudent ? (
-        // Student Detail View
         <div className="space-y-6">
           <Button 
             variant="outline" 
@@ -318,7 +434,6 @@ const TutorStudents = () => {
           </div>
         </div>
       ) : (
-        // Students List View
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
             <div className="relative w-full sm:w-64 md:w-80">
@@ -332,10 +447,135 @@ const TutorStudents = () => {
               />
             </div>
             
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Student
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button onClick={handleBatchUpload} className="flex-1 sm:flex-none">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+              
+              <Dialog open={isUploading || isPreviewOpen} onOpenChange={(open) => {
+                if (!open && !isUploading) {
+                  setIsPreviewOpen(false);
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex-1 sm:flex-none">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Batch Upload
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {isUploading ? "Uploading Students..." : "Student Batch Upload"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {isUploading 
+                        ? "Please wait while we process your file." 
+                        : "Review the students to be added to your class."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  {isUploading ? (
+                    <div className="py-6 space-y-4">
+                      <Progress value={uploadProgress} className="w-full" />
+                      <p className="text-center text-sm text-muted-foreground">
+                        {uploadProgress < 50 ? "Reading file..." : 
+                         uploadProgress < 80 ? "Processing data..." : 
+                         "Preparing preview..."}
+                      </p>
+                    </div>
+                  ) : isPreviewOpen ? (
+                    <div className="py-2 space-y-4">
+                      <div className="border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Course</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {uploadPreview.map((student) => (
+                              <TableRow key={student.id}>
+                                <TableCell className="font-medium">{student.name}</TableCell>
+                                <TableCell>{student.email}</TableCell>
+                                <TableCell>{student.courses.map(c => c.name).join(', ')}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      
+                      <Alert>
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertTitle>Ready to import</AlertTitle>
+                        <AlertDescription>
+                          {uploadPreview.length} students will be added to your class.
+                        </AlertDescription>
+                      </Alert>
+                      
+                      <DialogFooter className="sm:justify-between">
+                        <Button variant="outline" onClick={cancelUpload}>
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                        <Button onClick={confirmUpload}>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Confirm Import
+                        </Button>
+                      </DialogFooter>
+                    </div>
+                  ) : (
+                    <div className="py-2 space-y-4">
+                      {uploadError && (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Error</AlertTitle>
+                          <AlertDescription>{uploadError}</AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      <div className="flex justify-center p-6 border-2 border-dashed rounded-lg">
+                        <div className="text-center space-y-2">
+                          <FileSpreadsheet className="h-8 w-8 mx-auto text-muted-foreground" />
+                          <div className="text-sm font-medium">
+                            Upload CSV or Excel file
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Drag and drop or click to browse
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground">
+                        Your file should include columns for student name, email, and course assignment.
+                      </p>
+                      
+                      <DialogFooter className="sm:justify-between">
+                        <Button variant="outline" onClick={downloadTemplate}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Template
+                        </Button>
+                        <Button onClick={handleBatchUpload}>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select File
+                        </Button>
+                      </DialogFooter>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                accept=".csv,.xlsx,.xls" 
+                className="hidden" 
+                onChange={handleFileChange}
+              />
+            </div>
           </div>
           
           <Tabs defaultValue="all" className="space-y-4">

@@ -1,231 +1,276 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import { Star, Clock, MessageCircle, Calendar } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Search, MessageSquare, Calendar, Star, Info } from 'lucide-react';
+import { tutors } from '@/contexts/ChatContext';
+import { useChat } from '@/contexts/ChatContext';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+
+const TutorCard = ({ tutor, onMessageClick, onViewProfile }: any) => {
+  return (
+    <Card className="overflow-hidden transition-all hover:shadow-md">
+      <CardHeader className="p-4 pb-0">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12 border-2 border-primary/10">
+              <AvatarImage src="/placeholder.svg" alt={tutor.name} />
+              <AvatarFallback>{tutor.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-lg">{tutor.name}</CardTitle>
+              <CardDescription>
+                {tutor.specialty || 'Mathematics & Physics'}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center">
+            {Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < (tutor.rating || 4)
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {tutor.bio || 'Experienced tutor specializing in helping students master complex concepts through personalized learning approaches.'}
+        </p>
+        <div className="flex flex-wrap gap-1 mt-3">
+          {(tutor.subjects || ['Mathematics', 'Physics', 'Computer Science']).map(
+            (subject: string) => (
+              <Badge key={subject} variant="outline" className="bg-muted/50">
+                {subject}
+              </Badge>
+            )
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0 flex justify-between gap-2">
+        <Button 
+          variant="outline" 
+          className="flex-1"
+          onClick={() => onViewProfile(tutor)}
+        >
+          <Info className="mr-2 h-4 w-4" />
+          Profile
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex-1"
+          onClick={() => onMessageClick(tutor)}
+        >
+          <MessageSquare className="mr-2 h-4 w-4" />
+          Message
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
 const StudentTutors = () => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTutor, setSelectedTutor] = useState<any>(null);
+  const { startNewConversation } = useChat();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    // Redirect if not authenticated or not a student
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    
-    if (currentUser?.role !== 'student') {
-      navigate('/tutors');
-      return;
-    }
-  }, [isAuthenticated, currentUser, navigate]);
-
-  // Mock tutors data
-  const tutors = [
-    {
-      id: 1,
-      name: 'Dr. Emily Johnson',
-      avatar: '/placeholder.svg',
-      specialization: 'Mathematics',
-      subjects: ['Calculus', 'Algebra', 'Statistics'],
-      rating: 4.9,
-      reviews: 128,
-      price: '$45/hour',
-      availability: 'Mon-Fri, 2PM-8PM',
-      bio: 'Mathematics professor with 10+ years of experience teaching algebra, calculus, and geometry to students of all levels.',
-    },
-    {
-      id: 2,
-      name: 'Dr. Michael Rodriguez',
-      avatar: '/placeholder.svg',
-      specialization: 'Physics',
-      subjects: ['Mechanics', 'Thermodynamics', 'Quantum Physics'],
-      rating: 4.8,
-      reviews: 97,
-      price: '$50/hour',
-      availability: 'Tue-Sat, 10AM-6PM',
-      bio: 'Physics PhD with extensive experience helping students understand complex concepts in classical and modern physics.',
-    },
-    {
-      id: 3,
-      name: 'Dr. Sarah Williams',
-      avatar: '/placeholder.svg',
-      specialization: 'Literature',
-      subjects: ['Essay Writing', 'Literary Analysis', 'Creative Writing'],
-      rating: 4.7,
-      reviews: 85,
-      price: '$40/hour',
-      availability: 'Mon-Thu, 3PM-9PM',
-      bio: 'English Literature professor specializing in essay development, critical reading skills, and creative writing techniques.',
-    },
-  ];
-
-  const handleBookSession = (tutorId: number) => {
+  const handleMessageClick = (tutor: any) => {
+    startNewConversation(tutor);
     toast({
-      title: "Session Requested",
-      description: "Your tutoring session request has been sent.",
+      title: "Conversation started",
+      description: `You can now chat with ${tutor.name}`,
     });
-  };
-
-  const handleMessageTutor = (tutorId: number) => {
     navigate('/students/messages');
   };
 
+  const handleViewProfile = (tutor: any) => {
+    setSelectedTutor(tutor);
+  };
+
+  // Add more details to tutors for display
+  const enhancedTutors = tutors.map((tutor, index) => ({
+    ...tutor,
+    rating: 4 + (index % 2 ? 0.5 : 0),
+    specialty: ['Mathematics & Physics', 'Literature & History', 'Computer Science', 'Biology & Chemistry', 'Languages'][index % 5],
+    subjects: [
+      ['Mathematics', 'Physics', 'Calculus'],
+      ['Literature', 'History', 'Essay Writing'],
+      ['Computer Science', 'Programming', 'Web Development'],
+      ['Biology', 'Chemistry', 'Lab Sciences'],
+      ['Spanish', 'French', 'ESL']
+    ][index % 5],
+    bio: [
+      'Experienced tutor with a PhD in Physics, specializing in making complex concepts accessible to students of all levels.',
+      'Passionate about literature and history with 10+ years of teaching experience. Focus on critical thinking and analytical skills.',
+      'Software engineer and educator helping students master programming concepts and build real-world projects.',
+      'Biology researcher with a talent for explaining scientific concepts clearly. Specializing in pre-med preparation.',
+      'Multilingual educator with expertise in language acquisition and cultural context. Personalized lesson plans for all levels.'
+    ][index % 5],
+    availability: ['Weekdays evenings', 'Weekends', 'Flexible schedule', 'Mornings only', 'Afternoons and evenings'][index % 5],
+    education: ['PhD, MIT', 'Masters, Stanford', 'PhD, Berkeley', 'Masters, Harvard', 'PhD, Oxford'][index % 5]
+  }));
+
+  const filteredTutors = enhancedTutors.filter((tutor) =>
+    tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tutor.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tutor.subjects.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <DashboardLayout title="Tutors">
+    <DashboardLayout title="Find Tutors">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold">Find a Tutor</h2>
-            <p className="text-muted-foreground">Connect with expert tutors in your subject area</p>
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search by name, subject, or specialty..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="absolute top-0 bottom-0 w-5 h-5 my-auto text-muted-foreground left-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <Input
-                type="text"
-                placeholder="Search by name or subject..."
-                className="pl-10 w-full sm:w-64"
-              />
-            </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" className="flex-1 sm:flex-none">
+              Filter
+            </Button>
+            <Button variant="outline" className="flex-1 sm:flex-none">
+              Sort
+            </Button>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {tutors.map((tutor) => (
-            <Card key={tutor.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={tutor.avatar} alt={tutor.name} />
-                      <AvatarFallback>{tutor.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{tutor.name}</CardTitle>
-                      <CardDescription>{tutor.specialization}</CardDescription>
+        {filteredTutors.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium">No tutors found</h3>
+            <p className="text-muted-foreground mt-1">
+              Try adjusting your search criteria
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTutors.map((tutor) => (
+              <TutorCard
+                key={tutor.id}
+                tutor={tutor}
+                onMessageClick={handleMessageClick}
+                onViewProfile={handleViewProfile}
+              />
+            ))}
+          </div>
+        )}
+
+        <Dialog open={!!selectedTutor} onOpenChange={() => setSelectedTutor(null)}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Tutor Profile</DialogTitle>
+              <DialogDescription>View tutor details and availability</DialogDescription>
+            </DialogHeader>
+            
+            {selectedTutor && (
+              <div className="space-y-4 mt-2">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16 border-2 border-primary/10">
+                    <AvatarImage src="/placeholder.svg" alt={selectedTutor.name} />
+                    <AvatarFallback>{selectedTutor.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div>
+                    <h3 className="text-xl font-bold">{selectedTutor.name}</h3>
+                    <p className="text-muted-foreground">{selectedTutor.specialty}</p>
+                    <div className="flex items-center mt-1">
+                      {Array(5)
+                        .fill(0)
+                        .map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < selectedTutor.rating
+                                ? 'text-yellow-400 fill-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      <span className="ml-1 text-sm text-muted-foreground">
+                        ({selectedTutor.rating}/5)
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                    <span>{tutor.rating}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap gap-1">
-                  {tutor.subjects.map((subject, index) => (
-                    <Badge key={index} variant="outline" className="font-normal">
-                      {subject}
-                    </Badge>
-                  ))}
                 </div>
                 
-                <p className="text-sm line-clamp-3">{tutor.bio}</p>
+                <div>
+                  <h4 className="font-medium mb-1">About</h4>
+                  <p className="text-sm text-muted-foreground">{selectedTutor.bio}</p>
+                </div>
                 
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                    <span>{tutor.price}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                    <span>{tutor.reviews} reviews</span>
+                <div>
+                  <h4 className="font-medium mb-1">Education</h4>
+                  <p className="text-sm text-muted-foreground">{selectedTutor.education}</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-1">Subjects</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedTutor.subjects.map((subject: string) => (
+                      <Badge key={subject} variant="outline">
+                        {subject}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
-                  variant="outline"
-                  onClick={() => handleMessageTutor(tutor.id)}
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Message
-                </Button>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Book Session
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
-                      <DialogDescription>
-                        Fill out the details to request a tutoring session
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="date">Date</Label>
-                          <Input id="date" type="date" />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="time">Time</Label>
-                          <Input id="time" type="time" />
-                        </div>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="duration">Duration</Label>
-                        <select 
-                          id="duration"
-                          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        >
-                          <option value="30">30 minutes</option>
-                          <option value="60" selected>60 minutes</option>
-                          <option value="90">90 minutes</option>
-                          <option value="120">120 minutes</option>
-                        </select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="topic">Topic/Subject</Label>
-                        <Input id="topic" placeholder="e.g. Calculus help, Essay review" />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="message">Message for tutor</Label>
-                        <Textarea 
-                          id="message" 
-                          placeholder="Describe what you need help with..."
-                          className="min-h-[100px]"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button onClick={() => handleBookSession(tutor.id)}>Request Session</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                
+                <div>
+                  <h4 className="font-medium mb-1">Availability</h4>
+                  <p className="text-sm text-muted-foreground">{selectedTutor.availability}</p>
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => {
+                      handleMessageClick(selectedTutor);
+                      setSelectedTutor(null);
+                    }}
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Message
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      navigate('/students/calendar');
+                      setSelectedTutor(null);
+                    }}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Schedule
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

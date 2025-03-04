@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EmojiPicker } from '@/components/Chat/EmojiPicker';
 import { AttachmentMenu } from '@/components/Chat/AttachmentMenu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatInterfaceProps {
   conversationId?: string;
@@ -29,6 +30,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   const [searchQuery, setSearchQuery] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { currentUser: authUser } = useAuth();
   const { 
     conversations, 
     activeConversation, 
@@ -36,9 +38,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     sendMessage, 
     getMessages, 
     markAsRead, 
-    getConversation 
+    getConversation,
+    currentUser
   } = useChat();
-  const [chatPartner, setChatPartner] = useState<{id: string, name: string, status?: string, lastSeen?: Date} | null>(null);
+  const [chatPartner, setChatPartner] = useState<{id: string, name: string, role?: string, status?: string, lastSeen?: Date} | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   
   useEffect(() => {
@@ -65,25 +68,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
       if (conversationId) {
         const conversation = await getConversation(conversationId);
         if (conversation) {
-          setChatPartner({
-            id: conversation.userIds[0], 
-            name: conversation.name,
-            status: Math.random() > 0.5 ? 'online' : 'offline',
-            lastSeen: conversation.lastActive
-          });
+          // Find the chat partner (not the current user)
+          const partner = conversation.participants.find(p => p.id !== currentUser?.id);
+          if (partner) {
+            setChatPartner({
+              id: partner.id, 
+              name: partner.name,
+              role: partner.role,
+              status: Math.random() > 0.5 ? 'online' : 'offline',
+              lastSeen: conversation.lastActive
+            });
+          }
         }
       } else if (activeConversation) {
-        setChatPartner({
-          id: activeConversation.userIds[0],
-          name: activeConversation.name,
-          status: Math.random() > 0.5 ? 'online' : 'offline',
-          lastSeen: activeConversation.lastActive
-        });
+        // Find the chat partner (not the current user)
+        const partner = activeConversation.participants.find(p => p.id !== currentUser?.id);
+        if (partner) {
+          setChatPartner({
+            id: partner.id,
+            name: partner.name,
+            role: partner.role,
+            status: Math.random() > 0.5 ? 'online' : 'offline',
+            lastSeen: activeConversation.lastActive
+          });
+        }
       }
     };
 
     loadConversation();
-  }, [conversationId, activeConversation, getConversation]);
+  }, [conversationId, activeConversation, getConversation, currentUser]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,7 +142,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
   };
 
   const getMessageStatus = (message: any) => {
-    if (message.senderId !== 'me') return null;
+    if (message.senderId !== currentUser?.id) return null;
     
     const status = message.status || 'sent';
     
@@ -235,6 +248,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     return groups;
   }, {});
 
+  if (!activeConversation && !conversationId) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center bg-muted/20 p-8 text-center">
+        <div className="max-w-md">
+          <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+          <p className="text-muted-foreground mb-6">
+            Choose an existing conversation or start a new one by clicking the plus button.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="border-b py-2 px-4 flex items-center bg-card shadow-sm sticky top-0 z-10">
@@ -313,9 +339,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
                   
                   <div className="space-y-4">
                     {groupedMessages[dateStr].map((message: any, index: number) => {
+                      // Determine if message is from current user (right side) or other user (left side)
+                      const isCurrentUser = message.senderId === currentUser?.id;
+                      
+                      // Check user roles to determine styling (tutors on right for student view, left for tutor view)
+                      const isTutorMessage = activeConversation?.participants.find(p => p.id === message.senderId)?.role === 'tutor';
+                      
+                      // For proper styling (align to right or left)
+                      const messageAlign = isCurrentUser ? 'justify-end' : 'justify-start';
+                      
+                      // Show avatar for first message in a series or when switching speakers
                       const showAvatar = index === 0 || 
                         groupedMessages[dateStr][index - 1]?.senderId !== message.senderId;
                       
+                      // Is this the last message in a group from the same sender?
                       const isLastInGroup = index === groupedMessages[dateStr].length - 1 || 
                         groupedMessages[dateStr][index + 1]?.senderId !== message.senderId;
                       
@@ -324,17 +361,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
                           key={message.id}
                           className={cn(
                             "flex",
-                            message.senderId === 'me' ? 'justify-end' : 'justify-start',
+                            messageAlign,
                             !isLastInGroup ? 'mb-1' : ''
                           )}
                         >
-                          {message.senderId !== 'me' && showAvatar && (
+                          {!isCurrentUser && showAvatar && (
                             <Avatar className="h-8 w-8 mr-2 self-end mb-1">
                               <AvatarImage src="/placeholder.svg" alt="Sender" />
                               <AvatarFallback>{chatPartner?.name?.charAt(0) || 'U'}</AvatarFallback>
                             </Avatar>
                           )}
-                          {message.senderId !== 'me' && !showAvatar && <div className="w-8 mr-2"></div>}
+                          {!isCurrentUser && !showAvatar && <div className="w-8 mr-2"></div>}
                           
                           <div className={cn(
                             "flex flex-col max-w-[75%]",
@@ -342,7 +379,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
                             <div
                               className={cn(
                                 "px-4 py-2.5 rounded-lg relative",
-                                message.senderId === 'me'
+                                isCurrentUser
                                   ? 'bg-primary text-primary-foreground rounded-br-none'
                                   : 'bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-bl-none'
                               )}
@@ -352,10 +389,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
                             {isLastInGroup && (
                               <div className={cn(
                                 "flex items-center mt-1 text-xs text-muted-foreground",
-                                message.senderId === 'me' ? 'justify-end mr-1' : 'ml-1'
+                                isCurrentUser ? 'justify-end mr-1' : 'ml-1'
                               )}>
                                 <span>{formatMessageTime(new Date(message.timestamp))}</span>
-                                {message.senderId === 'me' && (
+                                {isCurrentUser && (
                                   <span className="ml-1">{getMessageStatus(message)}</span>
                                 )}
                               </div>

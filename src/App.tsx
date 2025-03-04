@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,7 @@ import TutorCourses from "./pages/Tutor/Courses";
 import TutorSettings from "./pages/Tutor/Settings";
 import StudentAssignments from "./pages/Student/Assignments";
 import StudentSettings from "./pages/Student/Settings";
+import StudentTutors from "./pages/Student/Tutors";
 import Courses from "./pages/Courses";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
@@ -127,6 +129,10 @@ const AppRoutes = () => {
       <Route 
         path="/students/settings" 
         element={<ProtectedRoute element={<StudentSettings />} requiredRole="student" />} 
+      />
+      <Route 
+        path="/students/tutors" 
+        element={<ProtectedRoute element={<StudentTutors />} requiredRole="student" />} 
       />
       
       {/* Admin routes */}

@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
-type User = {
+export type User = {
   id: string;
   name: string;
   avatar: string;
@@ -10,7 +9,7 @@ type User = {
   email?: string; 
 };
 
-type Message = {
+export type Message = {
   id: string;
   senderId: string;
   text: string;
@@ -19,7 +18,7 @@ type Message = {
   status?: 'sent' | 'delivered' | 'read';
 };
 
-type Conversation = {
+export type Conversation = {
   id: string;
   userIds: string[]; // For easier lookup of conversation participants
   name: string;
@@ -41,30 +40,33 @@ interface ChatContextType {
   totalUnreadMessages: number;
   getMessages: (conversationId: string) => Promise<Message[]>;
   getConversation: (conversationId: string) => Promise<Conversation | null>;
+  startNewConversation: (user: User) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-// Sample data
-const tutors: User[] = [
+export const tutors: User[] = [
   { id: 't1', name: 'Dr. Emily Johnson', avatar: '/placeholder.svg', role: 'tutor', email: 'emily@example.com' },
   { id: 't2', name: 'Prof. Michael Chen', avatar: '/placeholder.svg', role: 'tutor', email: 'michael@example.com' },
   { id: 't3', name: 'Dr. Sophia Rodriguez', avatar: '/placeholder.svg', role: 'tutor', email: 'sophia@example.com' },
+  { id: 't4', name: 'Dr. David Williams', avatar: '/placeholder.svg', role: 'tutor', email: 'david@example.com' },
+  { id: 't5', name: 'Prof. Lisa Brown', avatar: '/placeholder.svg', role: 'tutor', email: 'lisa@example.com' },
 ];
 
-const students: User[] = [
+export const students: User[] = [
   { id: 's1', name: 'Alex Thompson', avatar: '/placeholder.svg', role: 'student', email: 'alex@example.com' },
   { id: 's2', name: 'Jamie Wilson', avatar: '/placeholder.svg', role: 'student', email: 'jamie@example.com' },
   { id: 's3', name: 'Taylor Smith', avatar: '/placeholder.svg', role: 'student', email: 'taylor@example.com' },
   { id: 's4', name: 'Jordan Lee', avatar: '/placeholder.svg', role: 'student', email: 'jordan@example.com' },
+  { id: 's5', name: 'Morgan Davis', avatar: '/placeholder.svg', role: 'student', email: 'morgan@example.com' },
+  { id: 's6', name: 'Casey Martin', avatar: '/placeholder.svg', role: 'student', email: 'casey@example.com' },
 ];
 
-// Initial conversations
 const sampleConversations: Conversation[] = [
   {
     id: 'c1',
     userIds: ['t1', 's1'],
-    name: 'Alex Thompson',
+    name: 'Dr. Emily Johnson',
     participants: [tutors[0], students[0]],
     lastActive: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
     messages: [
@@ -87,7 +89,7 @@ const sampleConversations: Conversation[] = [
   {
     id: 'c2',
     userIds: ['t2', 's2'],
-    name: 'Jamie Wilson',
+    name: 'Prof. Michael Chen',
     participants: [tutors[1], students[1]],
     lastActive: new Date(Date.now() - 1000 * 60 * 120), // 2 hours ago
     messages: [
@@ -103,7 +105,7 @@ const sampleConversations: Conversation[] = [
   {
     id: 'c3',
     userIds: ['t3', 's3'],
-    name: 'Taylor Smith',
+    name: 'Dr. Sophia Rodriguez',
     participants: [tutors[2], students[2]],
     lastActive: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
     messages: [
@@ -126,7 +128,7 @@ const sampleConversations: Conversation[] = [
   {
     id: 'c4',
     userIds: ['t1', 's4'],
-    name: 'Jordan Lee',
+    name: 'Dr. Emily Johnson',
     participants: [tutors[0], students[3]],
     lastActive: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
     messages: [
@@ -157,6 +159,36 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
   const toastShownRef = useRef(false);
 
+  const startNewConversation = (user: User) => {
+    if (!currentUser) return;
+    
+    const existingConversation = conversations.find(
+      conv => conv.userIds.includes(user.id) && conv.userIds.includes(currentUser.id)
+    );
+    
+    if (existingConversation) {
+      setActiveConversation(existingConversation);
+      return;
+    }
+    
+    const newConversation: Conversation = {
+      id: `c${Date.now()}`,
+      userIds: [currentUser.id, user.id],
+      name: user.name,
+      participants: [currentUser, user],
+      messages: [],
+      lastActive: new Date(),
+    };
+    
+    setConversations(prev => [...prev, newConversation]);
+    setActiveConversation(newConversation);
+    
+    toast({
+      title: "New conversation",
+      description: `You can now chat with ${user.name}`,
+    });
+  };
+
   const initializeChat = () => {
     if (!currentUser) {
       console.log('Chat not initialized: No current user');
@@ -166,7 +198,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log(`Chat initialized for ${currentUser.name}`);
     calculateTotalUnread();
     
-    // Find first conversation for current user and set as active if none is selected
     if (!activeConversation) {
       const firstConversation = conversations.find(
         conv => conv.participants.some(p => p.id === currentUser.id)
@@ -180,7 +211,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!chatInitialized) {
       setChatInitialized(true);
       
-      // Only show the initialization toast once per session
       if (!sessionStorage.getItem('chat_initialized') && !toastShownRef.current) {
         toastShownRef.current = true;
         toast({
@@ -210,7 +240,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return acc + unread;
     }, 0);
     
-    // Debounce total update to prevent UI jitter
     const timer = setTimeout(() => {
       setTotalUnreadMessages(total);
     }, 300);
@@ -243,7 +272,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setConversations(updatedConversations);
     
-    // Update active conversation
     const updatedActiveConv = updatedConversations.find(
       (conv) => conv.id === conversationId
     );
@@ -252,7 +280,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveConversation(updatedActiveConv);
     }
 
-    // Update message status to 'delivered' after a short delay
     setTimeout(() => {
       setConversations(prevConversations => 
         prevConversations.map(conv => {
@@ -272,7 +299,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
     }, 500);
     
-    // Update message status to 'read' after another delay
     setTimeout(() => {
       setConversations(prevConversations => 
         prevConversations.map(conv => {
@@ -292,7 +318,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
     }, 1500);
 
-    // Simulate response after delay
     if (currentUser.role === 'student') {
       simulateTutorResponse(conversationId);
     } else {
@@ -339,7 +364,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
       );
       
-      // Show notification for new message
       if (currentUser && currentUser.role === 'student') {
         toast({
           title: `New message from ${tutor.name}`,
@@ -349,7 +373,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       calculateTotalUnread();
-    }, 2000 + Math.random() * 2000); // Random delay between 2-4 seconds
+    }, 2000 + Math.random() * 2000);
   };
 
   const simulateStudentResponse = (conversationId: string) => {
@@ -391,7 +415,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
       );
       
-      // Show notification for new message
       if (currentUser && currentUser.role === 'tutor') {
         toast({
           title: `New message from ${student.name}`,
@@ -401,7 +424,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       calculateTotalUnread();
-    }, 2000 + Math.random() * 2000); // Random delay between 2-4 seconds
+    }, 2000 + Math.random() * 2000);
   };
 
   const getUnreadCount = (conversationId: string) => {
@@ -477,6 +500,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         totalUnreadMessages,
         getMessages,
         getConversation,
+        startNewConversation,
       }}
     >
       {children}
@@ -491,5 +515,3 @@ export const useChat = () => {
   }
   return context;
 };
-
-export { tutors, students };

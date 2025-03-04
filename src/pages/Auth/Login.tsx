@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle, Fingerprint, Smartphone, Phone } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle, Fingerprint, Smartphone, Phone, Check, Flag } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -18,6 +18,8 @@ import { tutors, students } from '@/contexts/ChatContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const emailFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -28,12 +30,38 @@ const emailFormSchema = z.object({
 });
 
 const phoneFormSchema = z.object({
-  phone: z.string().min(10, { message: 'Please enter a valid phone number' }),
+  phone: z.string().min(5, { message: 'Please enter a valid phone number' }),
+  countryCode: z.string().min(1, { message: 'Country code is required' }),
 });
+
+// Country codes
+const countryCodes = [
+  { value: '+1', label: 'United States (+1)', flag: '🇺🇸' },
+  { value: '+44', label: 'United Kingdom (+44)', flag: '🇬🇧' },
+  { value: '+91', label: 'India (+91)', flag: '🇮🇳' },
+  { value: '+61', label: 'Australia (+61)', flag: '🇦🇺' },
+  { value: '+55', label: 'Brazil (+55)', flag: '🇧🇷' },
+  { value: '+33', label: 'France (+33)', flag: '🇫🇷' },
+  { value: '+49', label: 'Germany (+49)', flag: '🇩🇪' },
+  { value: '+81', label: 'Japan (+81)', flag: '🇯🇵' },
+  { value: '+86', label: 'China (+86)', flag: '🇨🇳' },
+  { value: '+234', label: 'Nigeria (+234)', flag: '🇳🇬' },
+  { value: '+27', label: 'South Africa (+27)', flag: '🇿🇦' },
+  { value: '+52', label: 'Mexico (+52)', flag: '🇲🇽' },
+  { value: '+82', label: 'South Korea (+82)', flag: '🇰🇷' },
+  { value: '+7', label: 'Russia (+7)', flag: '🇷🇺' },
+  { value: '+971', label: 'UAE (+971)', flag: '🇦🇪' },
+  { value: '+966', label: 'Saudi Arabia (+966)', flag: '🇸🇦' },
+  { value: '+65', label: 'Singapore (+65)', flag: '🇸🇬' },
+  { value: '+60', label: 'Malaysia (+60)', flag: '🇲🇾' },
+  { value: '+254', label: 'Kenya (+254)', flag: '🇰🇪' },
+  { value: '+20', label: 'Egypt (+20)', flag: '🇪🇬' },
+];
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState<UserRole>('student');
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
+  const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodes[0]);
   const { login, loginWithPhone, isAuthenticated, loading } = useAuth();
   const { setCurrentUser } = useChat();
   const { toast } = useToast();
@@ -44,6 +72,8 @@ export default function Login() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpValue, setOtpValue] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
 
   const emailForm = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
@@ -57,8 +87,14 @@ export default function Login() {
     resolver: zodResolver(phoneFormSchema),
     defaultValues: {
       phone: '',
+      countryCode: '+1',
     },
   });
+
+  // Set up OTP inputs
+  useEffect(() => {
+    otpInputsRef.current = otpInputsRef.current.slice(0, 6);
+  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -96,6 +132,16 @@ export default function Login() {
             }
           } else if (authMethod === 'phone') {
             setShowOtpInput(true);
+            
+            // Generate a random 6-digit OTP code and log it to console for testing purposes
+            const testOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            console.log(`TEST OTP CODE: ${testOtpCode} (For testing purposes only)`);
+            
+            toast({
+              title: "OTP Sent!",
+              description: `Verification code sent to ${selectedCountryCode.value} ${phoneNumber}`,
+            });
+            
             return 100;
           }
           return 100;
@@ -106,14 +152,16 @@ export default function Login() {
   };
 
   const handleOtpSubmit = () => {
-    if (otpValue.length === 6) {
+    const fullOtp = otpDigits.join('');
+    
+    if (fullOtp.length === 6) {
       setShowOtpInput(false);
       // Simulate verification delay
       setTimeout(() => {
         if (authMethod === 'email') {
           completeLogin();
         } else if (authMethod === 'phone') {
-          completePhoneLogin();
+          completePhoneLogin(fullOtp);
         }
       }, 500);
     } else {
@@ -122,6 +170,46 @@ export default function Login() {
         description: "Please enter a valid 6-digit code",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleOtpInputChange = (index: number, value: string) => {
+    // Ensure input is only a single digit
+    if (!/^\d?$/.test(value)) return;
+    
+    // Update the digit at this position
+    const newOtpDigits = [...otpDigits];
+    newOtpDigits[index] = value;
+    setOtpDigits(newOtpDigits);
+    
+    // Move to next input if a digit was entered
+    if (value && index < 5) {
+      otpInputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        // If current input is empty and backspace is pressed, focus on previous input
+        otpInputsRef.current[index - 1]?.focus();
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      otpInputsRef.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      otpInputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePasteOtp = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim();
+    
+    // Only proceed if pasted data is 6 digits
+    if (/^\d{6}$/.test(pastedData)) {
+      const digits = pastedData.split('');
+      setOtpDigits(digits);
+      otpInputsRef.current[5]?.focus();
     }
   };
 
@@ -156,8 +244,9 @@ export default function Login() {
     });
   };
 
-  const completePhoneLogin = () => {
-    loginWithPhone(phoneNumber, otpValue, activeTab, (success) => {
+  const completePhoneLogin = (otpCode: string) => {
+    const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
+    loginWithPhone(formattedPhoneNumber, otpCode, activeTab, (success) => {
       if (success) {
         // Create mock user for phone auth
         const mockUser = {
@@ -165,7 +254,7 @@ export default function Login() {
           name: `${activeTab === 'student' ? 'Student' : 'Tutor'} User`,
           avatar: '/placeholder.svg',
           role: activeTab,
-          email: `phone-user-${Date.now()}@example.com`
+          email: `${formattedPhoneNumber.replace(/\D/g, '')}@edvix.com`
         };
         
         setCurrentUser(mockUser);
@@ -194,6 +283,17 @@ export default function Login() {
   const onPhoneSubmit = (data: z.infer<typeof phoneFormSchema>) => {
     setPhoneNumber(data.phone);
     handleVerificationProgress();
+  };
+
+  const resendOtp = () => {
+    toast({
+      title: "OTP Resent",
+      description: `A new verification code has been sent to ${selectedCountryCode.value} ${phoneNumber}`,
+    });
+    
+    // For testing: Generate and log a new OTP
+    const newTestOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`NEW TEST OTP CODE: ${newTestOtp} (For testing purposes only)`);
   };
 
   return (
@@ -236,22 +336,34 @@ export default function Login() {
                   <h3 className="text-lg font-semibold">Verification Code</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     We've sent a verification code to your {authMethod === 'email' ? 'email' : 'phone'}
+                    {authMethod === 'phone' && (
+                      <span className="font-medium"> ({selectedCountryCode.value} {phoneNumber})</span>
+                    )}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="otp" className="text-sm font-medium">
-                    Enter the 6-digit code
-                  </label>
-                  <div className="flex space-x-2">
-                    <Input 
-                      id="otp"
-                      placeholder="000000"
-                      value={otpValue}
-                      onChange={(e) => setOtpValue(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                      className="text-center text-lg"
-                      maxLength={6}
-                    />
+                  <div className="text-center mb-2">
+                    <label htmlFor="otp-input" className="text-sm font-medium">
+                      Enter the 6-digit code
+                    </label>
+                  </div>
+                  
+                  <div className="flex justify-center gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((index) => (
+                      <Input
+                        key={index}
+                        ref={(el) => (otpInputsRef.current[index] = el)}
+                        type="text"
+                        maxLength={1}
+                        value={otpDigits[index]}
+                        onChange={(e) => handleOtpInputChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        onPaste={index === 0 ? handlePasteOtp : undefined}
+                        className="w-10 h-12 text-center text-lg"
+                        aria-label={`digit ${index + 1}`}
+                      />
+                    ))}
                   </div>
                 </div>
                 
@@ -259,7 +371,7 @@ export default function Login() {
                   <Button 
                     onClick={handleOtpSubmit} 
                     className="w-full"
-                    disabled={otpValue.length !== 6}
+                    disabled={otpDigits.join('').length !== 6}
                   >
                     Verify Code
                     <Fingerprint className="ml-2 h-4 w-4" />
@@ -268,7 +380,7 @@ export default function Login() {
                 
                 <div className="text-center text-sm pt-2">
                   <span className="text-muted-foreground">Didn't receive the code? </span>
-                  <button className="text-primary hover:underline font-medium">
+                  <button onClick={resendOtp} className="text-primary hover:underline font-medium">
                     Resend
                   </button>
                 </div>
@@ -356,20 +468,73 @@ export default function Login() {
                       <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
                         <FormField
                           control={phoneForm.control}
+                          name="countryCode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      className="w-full justify-between"
+                                      role="combobox"
+                                    >
+                                      <div className="flex items-center">
+                                        <span className="mr-2">{selectedCountryCode.flag}</span>
+                                        <span>{selectedCountryCode.label}</span>
+                                      </div>
+                                      <Flag className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-full p-0" align="start">
+                                    <ScrollArea className="h-80">
+                                      <div className="space-y-1">
+                                        {countryCodes.map((country) => (
+                                          <Button
+                                            key={country.value}
+                                            variant="ghost"
+                                            className="w-full justify-start px-2 py-1.5 text-sm"
+                                            onClick={() => {
+                                              setSelectedCountryCode(country);
+                                              field.onChange(country.value);
+                                            }}
+                                          >
+                                            <span className="mr-2">{country.flag}</span>
+                                            <span>{country.label}</span>
+                                            {country.value === selectedCountryCode.value && (
+                                              <Check className="ml-auto h-4 w-4" />
+                                            )}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </ScrollArea>
+                                  </PopoverContent>
+                                </Popover>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={phoneForm.control}
                           name="phone"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Phone Number</FormLabel>
                               <FormControl>
                                 <div className="relative">
-                                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                  <div className="absolute left-3 top-2.5 text-muted-foreground">
+                                    {selectedCountryCode.value}
+                                  </div>
                                   <Input 
-                                    placeholder="+1 (555) 000-0000" 
+                                    placeholder="Phone number without country code" 
                                     {...field} 
-                                    className="pl-10" 
+                                    className="pl-12" 
                                     onChange={(e) => {
-                                      // Allow only numbers and some special characters for phone formatting
-                                      const value = e.target.value.replace(/[^\d\s\+\-\(\)\.]/g, '');
+                                      // Allow only numbers for phone
+                                      const value = e.target.value.replace(/\D/g, '');
                                       field.onChange(value);
                                     }}
                                   />

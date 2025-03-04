@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useChat } from '@/contexts/ChatContext';
+import { tutors, students } from '@/contexts/ChatContext'; // Import tutors and students arrays
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { 

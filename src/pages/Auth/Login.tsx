@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle, Fingerprint, Smartphone, Phone, Check, Flag } from 'lucide-react';
@@ -20,6 +19,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const emailFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -34,7 +34,6 @@ const phoneFormSchema = z.object({
   countryCode: z.string().min(1, { message: 'Country code is required' }),
 });
 
-// Country codes
 const countryCodes = [
   { value: '+1', label: 'United States (+1)', flag: '🇺🇸' },
   { value: '+44', label: 'United Kingdom (+44)', flag: '🇬🇧' },
@@ -91,12 +90,10 @@ export default function Login() {
     },
   });
 
-  // Set up OTP inputs
   useEffect(() => {
     otpInputsRef.current = otpInputsRef.current.slice(0, 6);
   }, []);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate(activeTab === 'tutor' ? '/tutors' : '/students');
@@ -111,7 +108,6 @@ export default function Login() {
       setVerificationProgress(prev => {
         const newProgress = prev + 10;
         
-        // Update verification steps based on progress
         if (newProgress === 20) {
           setVerificationStep('Checking credentials...');
         } else if (newProgress === 50) {
@@ -123,7 +119,7 @@ export default function Login() {
         if (newProgress >= 100) {
           clearInterval(interval);
           if (authMethod === 'email') {
-            if (Math.random() > 0.5) { // 50% chance of showing OTP verification
+            if (Math.random() > 0.5) {
               setShowOtpInput(true);
               return 100;
             } else {
@@ -133,7 +129,6 @@ export default function Login() {
           } else if (authMethod === 'phone') {
             setShowOtpInput(true);
             
-            // Generate a random 6-digit OTP code and log it to console for testing purposes
             const testOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
             console.log(`TEST OTP CODE: ${testOtpCode} (For testing purposes only)`);
             
@@ -156,7 +151,6 @@ export default function Login() {
     
     if (fullOtp.length === 6) {
       setShowOtpInput(false);
-      // Simulate verification delay
       setTimeout(() => {
         if (authMethod === 'email') {
           completeLogin();
@@ -174,15 +168,12 @@ export default function Login() {
   };
 
   const handleOtpInputChange = (index: number, value: string) => {
-    // Ensure input is only a single digit
     if (!/^\d?$/.test(value)) return;
     
-    // Update the digit at this position
     const newOtpDigits = [...otpDigits];
     newOtpDigits[index] = value;
     setOtpDigits(newOtpDigits);
     
-    // Move to next input if a digit was entered
     if (value && index < 5) {
       otpInputsRef.current[index + 1]?.focus();
     }
@@ -191,7 +182,6 @@ export default function Login() {
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       if (!otpDigits[index] && index > 0) {
-        // If current input is empty and backspace is pressed, focus on previous input
         otpInputsRef.current[index - 1]?.focus();
       }
     } else if (e.key === 'ArrowLeft' && index > 0) {
@@ -205,7 +195,6 @@ export default function Login() {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').trim();
     
-    // Only proceed if pasted data is 6 digits
     if (/^\d{6}$/.test(pastedData)) {
       const digits = pastedData.split('');
       setOtpDigits(digits);
@@ -217,7 +206,6 @@ export default function Login() {
     const values = emailForm.getValues();
     login(values.email, values.password, activeTab, (success) => {
       if (success) {
-        // Set current user in chat context
         if (activeTab === 'student') {
           const student = students.find(s => s.email?.toLowerCase() === values.email.toLowerCase());
           if (student) setCurrentUser(student);
@@ -229,10 +217,8 @@ export default function Login() {
         setShowVerificationAlert(false);
         setVerificationStep(null);
         
-        // Redirect to appropriate dashboard
         navigate(activeTab === 'tutor' ? '/tutors' : '/students');
         
-        // Show welcome toast
         toast({
           title: "Login successful",
           description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
@@ -248,7 +234,6 @@ export default function Login() {
     const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
     loginWithPhone(formattedPhoneNumber, otpCode, activeTab, (success) => {
       if (success) {
-        // Create mock user for phone auth
         const mockUser = {
           id: `${activeTab === 'student' ? 's' : 't'}-phone-${Date.now()}`,
           name: `${activeTab === 'student' ? 'Student' : 'Tutor'} User`,
@@ -261,10 +246,8 @@ export default function Login() {
         setShowVerificationAlert(false);
         setVerificationStep(null);
         
-        // Redirect to appropriate dashboard
         navigate(activeTab === 'tutor' ? '/tutors' : '/students');
         
-        // Show welcome toast
         toast({
           title: "Login successful",
           description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
@@ -291,7 +274,6 @@ export default function Login() {
       description: `A new verification code has been sent to ${selectedCountryCode.value} ${phoneNumber}`,
     });
     
-    // For testing: Generate and log a new OTP
     const newTestOtp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`NEW TEST OTP CODE: ${newTestOtp} (For testing purposes only)`);
   };
@@ -533,7 +515,6 @@ export default function Login() {
                                     {...field} 
                                     className="pl-12" 
                                     onChange={(e) => {
-                                      // Allow only numbers for phone
                                       const value = e.target.value.replace(/\D/g, '');
                                       field.onChange(value);
                                     }}

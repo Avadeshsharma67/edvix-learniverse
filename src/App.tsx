@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +33,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import Faq from "./pages/Faq";
+import AuthLogs from './pages/Admin/AuthLogs';
 
 const queryClient = new QueryClient();
 
@@ -128,6 +128,9 @@ const AppRoutes = () => {
         path="/students/settings" 
         element={<ProtectedRoute element={<StudentSettings />} requiredRole="student" />} 
       />
+      
+      {/* Admin routes */}
+      <Route path="/admin/logs" element={<AuthLogs />} />
       
       {/* Catch-all route */}
       <Route path="*" element={<NotFound />} />

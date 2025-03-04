@@ -31,6 +31,20 @@ interface AuthContextType {
   logout: (callback?: () => void) => void;
   loading: boolean;
   updateUserProfile: (userData: Partial<User>) => Promise<void>;
+  authLogs: AuthLogEntry[];
+}
+
+export interface AuthLogEntry {
+  id: string;
+  timestamp: Date;
+  userId?: string;
+  action: 'login' | 'register' | 'logout';
+  method: 'email' | 'phone';
+  role: UserRole;
+  userAgent: string;
+  ipAddress?: string;
+  success: boolean;
+  details?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,9 +52,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Mock users for demo purposes - not showing preloaded credentials
 const mockUsers: User[] = [];
 
+// Auth logs array for tracking login/registration attempts
+const initialAuthLogs: AuthLogEntry[] = 
+  JSON.parse(localStorage.getItem('authLogs') || '[]').map((log: any) => ({
+    ...log,
+    timestamp: new Date(log.timestamp)
+  }));
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authLogs, setAuthLogs] = useState<AuthLogEntry[]>(initialAuthLogs);
   const { toast } = useToast();
 
   const isAuthenticated = !!currentUser;
@@ -59,6 +81,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
+  // Save auth logs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('authLogs', JSON.stringify(authLogs));
+  }, [authLogs]);
+
+  // Helper function to log authentication events
+  const logAuthEvent = (
+    action: 'login' | 'register' | 'logout',
+    method: 'email' | 'phone',
+    role: UserRole,
+    success: boolean,
+    userId?: string,
+    details?: string
+  ) => {
+    const newLogEntry: AuthLogEntry = {
+      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      timestamp: new Date(),
+      userId,
+      action,
+      method,
+      role,
+      userAgent: navigator.userAgent,
+      success,
+      details
+    };
+
+    // In a real app, you might send this to your backend API
+    console.log('Auth event logged:', newLogEntry);
+    
+    // Add to local logs
+    setAuthLogs(prevLogs => [newLogEntry, ...prevLogs]);
+  };
+
   const login = (email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
@@ -75,6 +130,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome back!',
           description: `You have successfully logged in as ${user.name}`,
         });
+        
+        logAuthEvent('login', 'email', role, true, user.id);
+        
         if (callback) callback(true);
       } else {
         // Create a new user if none exists (for demo purposes only)
@@ -94,6 +152,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome to EdVix!',
           description: `You have successfully logged in as ${newUser.name}`,
         });
+        
+        logAuthEvent('login', 'email', role, true, newUser.id, 'New user created for demo');
         
         if (callback) callback(true);
       }
@@ -118,6 +178,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome back!',
           description: `You have successfully logged in as ${user.name}`,
         });
+        
+        logAuthEvent('login', 'phone', role, true, user.id);
+        
         if (callback) callback(true);
       } else {
         // Create a new user if none exists (for demo purposes only)
@@ -138,6 +201,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Welcome to EdVix!',
           description: `You have successfully logged in using your phone number`,
         });
+        
+        logAuthEvent('login', 'phone', role, true, newUser.id, 'New user created for demo');
         
         if (callback) callback(true);
       }
@@ -162,6 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: 'Email already in use',
           variant: 'destructive',
         });
+        logAuthEvent('register', 'email', role, false, undefined, 'Email already in use');
         if (callback) callback(false);
         setLoading(false);
         return;
@@ -187,6 +253,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Welcome to EdVix, ${name}!`,
       });
       
+      logAuthEvent('register', 'email', role, true, newUser.id);
+      
       if (callback) callback(true);
       setLoading(false);
     }, 1000);
@@ -208,6 +276,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: 'Phone number already in use',
           variant: 'destructive',
         });
+        logAuthEvent('register', 'phone', role, false, undefined, 'Phone number already in use');
         if (callback) callback(false);
         setLoading(false);
         return;
@@ -232,12 +301,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Welcome to EdVix, ${name}!`,
       });
       
+      logAuthEvent('register', 'phone', role, true, newUser.id);
+      
       if (callback) callback(true);
       setLoading(false);
     }, 1000);
   };
 
   const logout = (callback?: () => void) => {
+    if (currentUser) {
+      logAuthEvent('logout', 'email', currentUser.role, true, currentUser.id);
+    }
+    
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
     toast({
@@ -282,6 +357,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         loading,
         updateUserProfile,
+        authLogs,
       }}
     >
       {children}

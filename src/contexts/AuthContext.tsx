@@ -19,6 +19,7 @@ export interface User {
   theme?: string;
   language?: string;
   phone?: string;
+  twoFactorAuth?: boolean;
 }
 
 interface AuthContextType {
@@ -31,6 +32,8 @@ interface AuthContextType {
   logout: (callback?: () => void) => void;
   loading: boolean;
   updateUserProfile: (userData: Partial<User>) => Promise<void>;
+  verifyOTP: (phone: string, otp: string, callback?: (success: boolean) => void) => void;
+  sendOTP: (phone: string, callback?: (success: boolean) => void) => void;
   authLogs: AuthLogEntry[];
 }
 
@@ -124,6 +127,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
 
       if (user) {
+        // Check if user has 2FA enabled
+        if (user.twoFactorAuth) {
+          toast({
+            title: "2FA Required",
+            description: "Please verify your identity with the code sent to your phone.",
+          });
+          
+          // In a real app, this would trigger sending an OTP
+          // For demo, we'll just prompt for verification in the callback
+          if (callback) callback(true);
+          setLoading(false);
+          return;
+        }
+        
         setCurrentUser(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
         toast({
@@ -321,6 +338,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (callback) callback();
   };
+  
+  const sendOTP = (phone: string, callback?: (success: boolean) => void) => {
+    setLoading(true);
+    
+    // Simulate API call to send OTP
+    setTimeout(() => {
+      // In a real app, this would send an OTP via SMS
+      console.log('Sending OTP to:', phone);
+      
+      toast({
+        title: 'Verification Code Sent',
+        description: `A verification code has been sent to ${phone}`,
+      });
+      
+      setLoading(false);
+      if (callback) callback(true);
+    }, 1000);
+  };
+  
+  const verifyOTP = (phone: string, otp: string, callback?: (success: boolean) => void) => {
+    setLoading(true);
+    
+    // Simulate API call to verify OTP
+    setTimeout(() => {
+      // For demo purposes, any OTP will work
+      const validOTP = '123456'; // For demo only
+      
+      if (otp === validOTP) {
+        toast({
+          title: 'Verification Successful',
+          description: 'Your phone number has been verified',
+        });
+        
+        // If user exists, update their profile
+        if (currentUser) {
+          const updatedUser = { ...currentUser, phone, phoneVerified: true };
+          setCurrentUser(updatedUser);
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
+        
+        setLoading(false);
+        if (callback) callback(true);
+      } else {
+        toast({
+          title: 'Verification Failed',
+          description: 'Invalid verification code',
+          variant: 'destructive',
+        });
+        
+        setLoading(false);
+        if (callback) callback(false);
+      }
+    }, 1000);
+  };
 
   const updateUserProfile = async (userData: Partial<User>): Promise<void> => {
     setLoading(true);
@@ -357,6 +428,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         loading,
         updateUserProfile,
+        verifyOTP,
+        sendOTP,
         authLogs,
       }}
     >

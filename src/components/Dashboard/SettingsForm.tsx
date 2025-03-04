@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, CheckCircle, ExternalLink, Shield, Upload } from 'lucide-react';
+import { SecurityForm } from './SecurityForm';
 
 // Create different form schemas for each section
 const profileFormSchema = z.object({
@@ -36,26 +37,6 @@ const notificationsFormSchema = z.object({
   updatesAndNews: z.boolean(),
 });
 
-const securityFormSchema = z.object({
-  currentPassword: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
-  newPassword: z.string()
-    .min(8, { message: 'Password must be at least 8 characters.' })
-    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter.' })
-    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter.' })
-    .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
-    .optional(),
-  confirmPassword: z.string().optional(),
-  twoFactorAuth: z.boolean(),
-}).refine((data) => {
-  if (data.newPassword && data.confirmPassword) {
-    return data.newPassword === data.confirmPassword;
-  }
-  return true;
-}, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
 interface SettingsFormProps {
   section?: 'profile' | 'account' | 'notifications' | 'security';
 }
@@ -64,8 +45,6 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ section = 'profile' 
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
-  const [otpVerificationEnabled, setOtpVerificationEnabled] = useState(false);
   
   // Configure form based on selected section
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
@@ -97,16 +76,6 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ section = 'profile' 
     }
   });
 
-  const securityForm = useForm<z.infer<typeof securityFormSchema>>({
-    resolver: zodResolver(securityFormSchema),
-    defaultValues: {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-      twoFactorAuth: false,
-    }
-  });
-
   const onSubmitProfile = (values: z.infer<typeof profileFormSchema>) => {
     toast({
       title: "Profile Updated",
@@ -129,26 +98,6 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ section = 'profile' 
       description: "Your notification preferences have been saved.",
     });
     console.log("Notifications form values:", values);
-  };
-
-  const onSubmitSecurity = (values: z.infer<typeof securityFormSchema>) => {
-    toast({
-      title: "Security Settings Updated",
-      description: "Your security settings have been updated successfully.",
-    });
-    console.log("Security form values:", values);
-    
-    if (values.twoFactorAuth && !otpVerificationEnabled) {
-      setVerifyingPhone(true);
-      setTimeout(() => {
-        setOtpVerificationEnabled(true);
-        setVerifyingPhone(false);
-        toast({
-          title: "Two-Factor Authentication Enabled",
-          description: "Your account is now more secure with 2FA.",
-        });
-      }, 2000);
-    }
   };
 
   const handlePhotoUpload = () => {
@@ -436,123 +385,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ section = 'profile' 
   );
 
   const renderSecuritySection = () => (
-    <Form {...securityForm}>
-      <form onSubmit={securityForm.handleSubmit(onSubmitSecurity)} className="space-y-6">
-        <div className="space-y-4">
-          <FormField
-            control={securityForm.control}
-            name="currentPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Enter your current password to make changes.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={securityForm.control}
-            name="newPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Password must be at least 8 characters with uppercase, lowercase, and numbers.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={securityForm.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Confirm your new password.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={securityForm.control}
-            name="twoFactorAuth"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">
-                    Two-Factor Authentication
-                    {otpVerificationEnabled && (
-                      <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-800/30 dark:text-green-500">
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Enabled
-                      </span>
-                    )}
-                  </FormLabel>
-                  <FormDescription>
-                    Add an extra layer of security with OTP verification.
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <div className="flex items-center space-x-2">
-                    {verifyingPhone ? (
-                      <div className="text-xs text-muted-foreground animate-pulse">Verifying...</div>
-                    ) : (
-                      <Switch
-                        checked={field.value || otpVerificationEnabled}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                          if (checked && !otpVerificationEnabled) {
-                            setVerifyingPhone(true);
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <div className="flex items-center rounded-lg border p-4 text-sm text-muted-foreground">
-            <Shield className="h-5 w-5 mr-2 text-blue-500" />
-            <span>
-              We use encryption and secure storage to protect your sensitive information. 
-              <a href="#" className="text-primary hover:underline ml-1 inline-flex items-center">
-                Learn more <ExternalLink className="h-3 w-3 ml-0.5" />
-              </a>
-            </span>
-          </div>
-          
-          {otpVerificationEnabled && (
-            <div className="flex items-center rounded-lg bg-blue-50 dark:bg-blue-950/50 p-4 text-sm text-blue-800 dark:text-blue-300">
-              <Bell className="h-5 w-5 mr-2 text-blue-500" />
-              <span>
-                Email verification is currently active. A confirmation link will be sent for any important account changes.
-              </span>
-            </div>
-          )}
-        </div>
-        
-        <Button type="submit">Update Security Settings</Button>
-      </form>
-    </Form>
+    <SecurityForm />
   );
 
   // Render the appropriate form based on section

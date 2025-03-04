@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic, Check, CheckCheck } from 'lucide-react';
+import { Send, ChevronLeft, PlusCircle, Smile, Paperclip, Image, Mic, Check, CheckCheck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -7,14 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-
-interface ChatMessage {
-  id: string;
-  senderId: string;
-  text: string;
-  timestamp: Date;
-  status?: 'sent' | 'delivered' | 'read';
-}
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ChatInterfaceProps {
   conversationId?: string;
@@ -22,12 +16,20 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
-  const { conversations, activeConversation, setActiveConversation, sendMessage, getMessages, markAsRead, getConversation } = useChat();
+  const { 
+    conversations, 
+    activeConversation, 
+    setActiveConversation, 
+    sendMessage, 
+    getMessages, 
+    markAsRead, 
+    getConversation 
+  } = useChat();
   const [chatPartner, setChatPartner] = useState<{id: string, name: string, status?: string, lastSeen?: Date} | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
   
   useEffect(() => {
     if (!conversationId && conversations.length > 0 && !activeConversation) {
@@ -97,18 +99,51 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
     }
   };
 
-  const getMessageStatus = (message: ChatMessage) => {
+  const getMessageStatus = (message: any) => {
     if (message.senderId !== 'me') return null;
     
     const status = message.status || 'sent';
     
     switch(status) {
       case 'sent':
-        return <Check className="h-3.5 w-3.5 text-muted-foreground" />;
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Check className="h-3.5 w-3.5 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sent</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
       case 'delivered':
-        return <CheckCheck className="h-3.5 w-3.5 text-muted-foreground" />;
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <CheckCheck className="h-3.5 w-3.5 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delivered</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
       case 'read':
-        return <CheckCheck className="h-3.5 w-3.5 text-blue-500" />;
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <CheckCheck className="h-3.5 w-3.5 text-blue-500" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Read</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
       default:
         return null;
     }
@@ -127,6 +162,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
       setIsTyping(false);
     }
   };
+
+  const getDateSeparator = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return format(date, 'MMMM d, yyyy');
+    }
+  };
+
+  // Group messages by date
+  const groupedMessages = messages.reduce((groups: any, message: any) => {
+    const date = new Date(message.timestamp);
+    const dateStr = date.toDateString();
+    
+    if (!groups[dateStr]) {
+      groups[dateStr] = [];
+    }
+    
+    groups[dateStr].push(message);
+    return groups;
+  }, {});
 
   return (
     <div className="flex flex-col h-full">
@@ -157,7 +219,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/30 p-4">
+      <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/30 p-4 bg-[url('/chat-bg.png')] bg-repeat bg-opacity-5">
         <ScrollArea className="h-full pr-4">
           <div className="space-y-4">
             {messages.length === 0 ? (
@@ -165,39 +227,52 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onBack })
                 No messages yet. Start a conversation!
               </div>
             ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex flex-col max-w-[75%]",
-                    message.senderId === 'me' ? 'ml-auto' : 'mr-auto'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "px-4 py-2.5 rounded-2xl relative",
-                      message.senderId === 'me'
-                        ? 'bg-primary text-primary-foreground rounded-tr-none'
-                        : 'bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-tl-none'
-                    )}
-                  >
-                    {message.text}
+              Object.keys(groupedMessages).map((dateStr) => (
+                <div key={dateStr}>
+                  <div className="flex justify-center mb-4 mt-6">
+                    <div className="bg-white dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
+                      {getDateSeparator(new Date(dateStr))}
+                    </div>
                   </div>
-                  <div className={cn(
-                    "flex items-center mt-1 text-xs text-muted-foreground",
-                    message.senderId === 'me' ? 'justify-end mr-1' : 'ml-1'
-                  )}>
-                    <span>{formatMessageTime(message.timestamp)}</span>
-                    {message.senderId === 'me' && (
-                      <span className="ml-1">{getMessageStatus(message)}</span>
-                    )}
+                  
+                  <div className="space-y-4">
+                    {groupedMessages[dateStr].map((message: any) => (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          "flex flex-col max-w-[75%]",
+                          message.senderId === 'me' ? 'ml-auto' : 'mr-auto'
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "px-4 py-2.5 rounded-lg relative",
+                            message.senderId === 'me'
+                              ? 'bg-primary text-primary-foreground rounded-tr-none'
+                              : 'bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-tl-none'
+                          )}
+                        >
+                          {message.text}
+                        </div>
+                        <div className={cn(
+                          "flex items-center mt-1 text-xs text-muted-foreground",
+                          message.senderId === 'me' ? 'justify-end mr-1' : 'ml-1'
+                        )}>
+                          <span>{formatMessageTime(new Date(message.timestamp))}</span>
+                          {message.senderId === 'me' && (
+                            <span className="ml-1">{getMessageStatus(message)}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))
             )}
+            
             {isTyping && chatPartner && (
               <div className="flex max-w-[75%] mr-auto">
-                <div className="px-4 py-2.5 bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-2xl rounded-tl-none">
+                <div className="px-4 py-2.5 bg-white dark:bg-slate-800 text-foreground shadow-sm rounded-lg rounded-tl-none">
                   <div className="flex space-x-1">
                     <div className="h-2 w-2 rounded-full bg-gray-300 animate-pulse"></div>
                     <div className="h-2 w-2 rounded-full bg-gray-300 animate-pulse delay-100"></div>

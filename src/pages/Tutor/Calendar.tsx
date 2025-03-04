@@ -1,4 +1,5 @@
 
+// Import the necessary components for the Google Meet integration
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { Clock, Users, CalendarIcon, PlusCircle } from 'lucide-react';
+import { Clock, Users, CalendarIcon, PlusCircle, Video, Link as LinkIcon } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -25,6 +26,7 @@ interface Event {
   type: 'class' | 'office-hours' | 'meeting';
   participants: string[];
   description?: string;
+  meetLink?: string;
 }
 
 const TutorCalendar = () => {
@@ -41,7 +43,8 @@ const TutorCalendar = () => {
       endTime: '16:00',
       type: 'class',
       participants: ['All enrolled students'],
-      description: 'Regular class session covering linear algebra.'
+      description: 'Regular class session covering linear algebra.',
+      meetLink: 'https://meet.google.com/qpj-stgk-opm'
     },
     {
       id: '2',
@@ -51,7 +54,8 @@ const TutorCalendar = () => {
       endTime: '12:00',
       type: 'office-hours',
       participants: ['Any student'],
-      description: 'Drop-in hours for questions and consultations.'
+      description: 'Drop-in hours for questions and consultations.',
+      meetLink: 'https://meet.google.com/qpj-stgk-opm'
     },
     {
       id: '3',
@@ -61,7 +65,8 @@ const TutorCalendar = () => {
       endTime: '13:30',
       type: 'meeting',
       participants: ['Alex Thompson'],
-      description: 'Discussion about the research project.'
+      description: 'Discussion about the research project.',
+      meetLink: 'https://meet.google.com/qpj-stgk-opm'
     }
   ]);
   
@@ -72,10 +77,13 @@ const TutorCalendar = () => {
     endTime: '',
     type: 'class',
     participants: [],
-    description: ''
+    description: '',
+    meetLink: 'https://meet.google.com/qpj-stgk-opm'
   });
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMeetModalOpen, setIsMeetModalOpen] = useState(false);
+  const [activeEvent, setActiveEvent] = useState<Event | null>(null);
 
   React.useEffect(() => {
     // Redirect if not authenticated or not a tutor
@@ -109,7 +117,8 @@ const TutorCalendar = () => {
       endTime: '',
       type: 'class',
       participants: [],
-      description: ''
+      description: '',
+      meetLink: 'https://meet.google.com/qpj-stgk-opm'
     });
   };
 
@@ -120,6 +129,23 @@ const TutorCalendar = () => {
       event.date.getMonth() === date.getMonth() &&
       event.date.getFullYear() === date.getFullYear()
     );
+  };
+
+  const handleStartMeeting = (event: Event) => {
+    setActiveEvent(event);
+    setIsMeetModalOpen(true);
+  };
+
+  const joinMeeting = () => {
+    if (activeEvent?.meetLink) {
+      window.open(activeEvent.meetLink, '_blank');
+      setIsMeetModalOpen(false);
+      
+      toast({
+        title: "Joining meeting",
+        description: "Opening Google Meet in a new tab",
+      });
+    }
   };
 
   const selectedDateEvents = getEventsForSelectedDate();
@@ -209,6 +235,21 @@ const TutorCalendar = () => {
                   </div>
                   
                   <div className="grid gap-2">
+                    <Label htmlFor="meetLink">Google Meet Link</Label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="meetLink" 
+                        placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                        value={newEvent.meetLink}
+                        onChange={(e) => setNewEvent({...newEvent, meetLink: e.target.value})}
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Default meeting link from your settings will be used if left empty</p>
+                  </div>
+                  
+                  <div className="grid gap-2">
                     <Label htmlFor="participants">Participants</Label>
                     <Input 
                       id="participants" 
@@ -290,8 +331,18 @@ const TutorCalendar = () => {
                           </div>
                         </div>
                         {event.description && (
-                          <p className="text-sm mt-2">{event.description}</p>
+                          <p className="text-sm mt-2 mb-4">{event.description}</p>
                         )}
+                        <div className="mt-2 flex justify-end">
+                          <Button 
+                            onClick={() => handleStartMeeting(event)}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            Start Class
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -339,6 +390,17 @@ const TutorCalendar = () => {
                         <Clock className="h-3 w-3 mr-1" />
                         {event.startTime} - {event.endTime}
                       </div>
+                      <div className="mt-2">
+                        <Button 
+                          onClick={() => handleStartMeeting(event)}
+                          size="sm" 
+                          variant="outline"
+                          className="w-full text-xs"
+                        >
+                          <Video className="h-3 w-3 mr-1" />
+                          Start Meeting
+                        </Button>
+                      </div>
                     </div>
                   ))}
               </div>
@@ -346,6 +408,35 @@ const TutorCalendar = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={isMeetModalOpen} onOpenChange={setIsMeetModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Join Google Meet</DialogTitle>
+            <DialogDescription>
+              Are you ready to start the meeting for {activeEvent?.title}?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-muted p-3 rounded-md flex items-center gap-2 mb-4">
+              <LinkIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-mono overflow-hidden text-ellipsis">{activeEvent?.meetLink}</span>
+            </div>
+            <div className="text-sm space-y-2">
+              <p><strong>Date:</strong> {activeEvent?.date.toLocaleDateString()}</p>
+              <p><strong>Time:</strong> {activeEvent?.startTime} - {activeEvent?.endTime}</p>
+              <p><strong>Participants:</strong> {activeEvent?.participants.join(', ')}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMeetModalOpen(false)}>Cancel</Button>
+            <Button onClick={joinMeeting} className="bg-green-600 hover:bg-green-700">
+              <Video className="h-4 w-4 mr-2" />
+              Join Meeting
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

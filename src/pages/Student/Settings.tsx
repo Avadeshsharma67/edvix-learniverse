@@ -4,7 +4,9 @@ import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { SettingsForm } from '@/components/Dashboard/SettingsForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, ShieldCheck, UserCircle, Lock } from 'lucide-react';
+import { Bell, ShieldCheck, UserCircle, Lock, Video, Calendar } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const StudentSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -42,6 +44,35 @@ const StudentSettings = () => {
               
               <TabsContent value="profile">
                 <SettingsForm />
+
+                <div className="mt-8 border-t pt-6">
+                  <h3 className="text-lg font-medium mb-4 flex items-center">
+                    <Video className="h-5 w-5 mr-2 text-primary" />
+                    Class Preferences
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="auto-join">Auto-join video meetings</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Automatically join the meeting when a class is scheduled to start
+                        </p>
+                      </div>
+                      <Switch id="auto-join" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="reminder">Class reminders</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive notifications 15 minutes before a scheduled class
+                        </p>
+                      </div>
+                      <Switch id="reminder" defaultChecked />
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
               
               <TabsContent value="account">

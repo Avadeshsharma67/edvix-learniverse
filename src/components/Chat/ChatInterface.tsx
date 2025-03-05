@@ -7,11 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import EmojiPicker from './EmojiPicker';
-import AttachmentMenu from './AttachmentMenu';
+import { EmojiPicker } from './EmojiPicker';
+import { AttachmentMenu } from './AttachmentMenu';
 import { format } from 'date-fns';
 
-const ChatInterface = () => {
+interface ChatInterfaceProps {
+  onBack?: () => void;
+}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ onBack }) => {
   const { activeConversation, sendMessage, currentUser } = useChat();
   const [messageText, setMessageText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -75,6 +79,11 @@ const ChatInterface = () => {
       {/* Chat header */}
       <div className="border-b p-3 flex items-center justify-between">
         <div className="flex items-center">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+            </Button>
+          )}
           <Avatar className="h-10 w-10 mr-2">
             <AvatarImage src="/placeholder.svg" alt={activeConversation.name} />
             <AvatarFallback>{activeConversation.name.charAt(0)}</AvatarFallback>
@@ -82,7 +91,7 @@ const ChatInterface = () => {
           <div>
             <h3 className="font-medium text-base">{activeConversation.name}</h3>
             <p className="text-xs text-muted-foreground">
-              {activeConversation.isOnline ? 'Online' : 'Last active recently'}
+              {activeConversation.lastActive ? 'Last active recently' : 'Last active recently'}
             </p>
           </div>
         </div>
@@ -204,7 +213,7 @@ const ChatInterface = () => {
                 
                 {showAttachmentMenu && (
                   <div className="absolute bottom-10 right-0">
-                    <AttachmentMenu />
+                    <AttachmentMenu onSelect={() => setShowAttachmentMenu(false)} />
                   </div>
                 )}
               </div>

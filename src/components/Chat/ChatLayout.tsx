@@ -33,9 +33,13 @@ const ChatLayout = () => {
         "flex-1 flex flex-col",
         isMobile && showSidebar ? "hidden" : "block"
       )}>
-        <ChatInterface 
-          onBack={isMobile ? () => setShowSidebar(true) : undefined} 
-        />
+        {isMobile ? (
+          <ChatInterface 
+            onBack={() => setShowSidebar(true)} 
+          />
+        ) : (
+          <ChatInterface />
+        )}
       </div>
     </div>
   );

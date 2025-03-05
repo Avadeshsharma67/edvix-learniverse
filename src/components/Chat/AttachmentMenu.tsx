@@ -4,7 +4,7 @@ import { FileText, Camera, Video, Paperclip, Map, ContactIcon } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 
 interface AttachmentMenuProps {
-  onSelect: (type: string) => void;
+  onSelect: (type?: string) => void;
 }
 
 interface AttachmentOption {
@@ -55,20 +55,24 @@ export const AttachmentMenu: React.FC<AttachmentMenuProps> = ({ onSelect }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {attachmentOptions.map((option) => (
-        <Button
-          key={option.type}
-          variant="ghost"
-          className="flex flex-col items-center justify-center h-20 rounded-lg hover:bg-muted p-2"
-          onClick={() => onSelect(option.type)}
-        >
-          <div className={`rounded-full p-2 mb-1 ${option.color}`}>
-            {option.icon}
-          </div>
-          <span className="text-xs">{option.label}</span>
-        </Button>
-      ))}
+    <div className="bg-card border rounded-lg shadow-md p-2 w-64">
+      <div className="grid grid-cols-2 gap-2">
+        {attachmentOptions.map((option) => (
+          <Button
+            key={option.type}
+            variant="ghost"
+            className="flex flex-col items-center justify-center h-20 rounded-lg hover:bg-muted p-2"
+            onClick={() => onSelect(option.type)}
+          >
+            <div className={`rounded-full p-2 mb-1 ${option.color}`}>
+              {option.icon}
+            </div>
+            <span className="text-xs">{option.label}</span>
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };
+
+export default AttachmentMenu;

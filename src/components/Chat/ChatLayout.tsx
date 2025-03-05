@@ -13,7 +13,7 @@ const ChatLayout = () => {
   
   return (
     <div className={cn(
-      "flex h-full border rounded-lg overflow-hidden",
+      "flex h-full border rounded-lg overflow-hidden shadow-md",
       isMobile ? "flex-col" : "rounded-lg"
     )}>
       {/* Conversation list sidebar */}

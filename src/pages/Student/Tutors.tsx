@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { tutors } from '@/contexts/ChatContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Dialog, 
   DialogContent, 
@@ -26,7 +27,7 @@ const TutorCard = ({ tutor, onMessageClick, onViewProfile }: any) => {
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-primary/10">
-              <AvatarImage src="/placeholder.svg" alt={tutor.name} />
+              <AvatarImage src={tutor.avatar || "/placeholder.svg"} alt={tutor.name} />
               <AvatarFallback>{tutor.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
@@ -91,9 +92,55 @@ const TutorCard = ({ tutor, onMessageClick, onViewProfile }: any) => {
 const StudentTutors = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTutor, setSelectedTutor] = useState<any>(null);
+  const [registeredTutors, setRegisteredTutors] = useState<any[]>([]);
   const { startNewConversation } = useChat();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Fetch registered users
+  useEffect(() => {
+    // Get registered tutors from localStorage
+    const fetchRegisteredTutors = () => {
+      const registeredUsers = [];
+      // Check locally stored users
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('currentUser')) {
+          try {
+            const userData = JSON.parse(localStorage.getItem(key) || '');
+            if (userData && userData.role === 'tutor') {
+              registeredUsers.push(userData);
+            }
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+          }
+        }
+      }
+      
+      // Combine with predefined tutors to ensure we have tutors to display
+      // Don't add duplicates
+      const existingIds = new Set(registeredUsers.map(user => user.id));
+      const combinedTutors = [
+        ...registeredUsers,
+        ...tutors.filter(tutor => !existingIds.has(tutor.id))
+      ];
+      
+      setRegisteredTutors(combinedTutors);
+    };
+
+    fetchRegisteredTutors();
+    
+    // Set up listener for storage events to detect user changes
+    const handleStorageChange = () => {
+      fetchRegisteredTutors();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleMessageClick = (tutor: any) => {
     startNewConversation(tutor);
@@ -109,32 +156,34 @@ const StudentTutors = () => {
   };
 
   // Add more details to tutors for display
-  const enhancedTutors = tutors.map((tutor, index) => ({
+  const enhanceTutor = (tutor: any, index: number) => ({
     ...tutor,
     rating: 4 + (index % 2 ? 0.5 : 0),
-    specialty: ['Mathematics & Physics', 'Literature & History', 'Computer Science', 'Biology & Chemistry', 'Languages'][index % 5],
-    subjects: [
+    specialty: tutor.specialty || ['Mathematics & Physics', 'Literature & History', 'Computer Science', 'Biology & Chemistry', 'Languages'][index % 5],
+    subjects: tutor.subjects || [
       ['Mathematics', 'Physics', 'Calculus'],
       ['Literature', 'History', 'Essay Writing'],
       ['Computer Science', 'Programming', 'Web Development'],
       ['Biology', 'Chemistry', 'Lab Sciences'],
       ['Spanish', 'French', 'ESL']
     ][index % 5],
-    bio: [
+    bio: tutor.bio || [
       'Experienced tutor with a PhD in Physics, specializing in making complex concepts accessible to students of all levels.',
       'Passionate about literature and history with 10+ years of teaching experience. Focus on critical thinking and analytical skills.',
       'Software engineer and educator helping students master programming concepts and build real-world projects.',
       'Biology researcher with a talent for explaining scientific concepts clearly. Specializing in pre-med preparation.',
       'Multilingual educator with expertise in language acquisition and cultural context. Personalized lesson plans for all levels.'
     ][index % 5],
-    availability: ['Weekdays evenings', 'Weekends', 'Flexible schedule', 'Mornings only', 'Afternoons and evenings'][index % 5],
-    education: ['PhD, MIT', 'Masters, Stanford', 'PhD, Berkeley', 'Masters, Harvard', 'PhD, Oxford'][index % 5]
-  }));
+    availability: tutor.availability || ['Weekdays evenings', 'Weekends', 'Flexible schedule', 'Mornings only', 'Afternoons and evenings'][index % 5],
+    education: tutor.education || ['PhD, MIT', 'Masters, Stanford', 'PhD, Berkeley', 'Masters, Harvard', 'PhD, Oxford'][index % 5]
+  });
+
+  const enhancedTutors = registeredTutors.map((tutor, index) => enhanceTutor(tutor, index));
 
   const filteredTutors = enhancedTutors.filter((tutor) =>
     tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tutor.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tutor.subjects.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    (tutor.specialty && tutor.specialty.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (tutor.subjects && tutor.subjects.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase())))
   );
 
   return (
@@ -191,7 +240,7 @@ const StudentTutors = () => {
               <div className="space-y-4 mt-2">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16 border-2 border-primary/10">
-                    <AvatarImage src="/placeholder.svg" alt={selectedTutor.name} />
+                    <AvatarImage src={selectedTutor.avatar || "/placeholder.svg"} alt={selectedTutor.name} />
                     <AvatarFallback>{selectedTutor.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   
@@ -231,7 +280,7 @@ const StudentTutors = () => {
                 <div>
                   <h4 className="font-medium mb-1">Subjects</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedTutor.subjects.map((subject: string) => (
+                    {selectedTutor.subjects && selectedTutor.subjects.map((subject: string) => (
                       <Badge key={subject} variant="outline">
                         {subject}
                       </Badge>

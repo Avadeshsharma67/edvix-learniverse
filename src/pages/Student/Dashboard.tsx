@@ -91,7 +91,7 @@ const StudentDashboard = () => {
       title: 'Perfect Attendance',
       description: 'Attended all scheduled sessions for 2 consecutive weeks',
       date: 'Today',
-      icon: 'star',
+      icon: 'star' as 'star',
       points: 50,
       isNew: true
     },
@@ -100,7 +100,7 @@ const StudentDashboard = () => {
       title: 'Quiz Master',
       description: 'Scored 90% or higher on 5 consecutive quizzes',
       date: '3 days ago',
-      icon: 'trophy',
+      icon: 'trophy' as 'trophy',
       points: 100
     },
     {
@@ -108,7 +108,7 @@ const StudentDashboard = () => {
       title: 'Fast Learner',
       description: 'Completed a course 30% faster than average',
       date: '1 week ago',
-      icon: 'zap',
+      icon: 'zap' as 'zap',
       points: 75
     },
     {
@@ -116,14 +116,14 @@ const StudentDashboard = () => {
       title: 'Bookworm',
       description: 'Read all recommended materials for your courses',
       date: '2 weeks ago',
-      icon: 'book',
+      icon: 'book' as 'book',
       points: 50
     },
   ];
 
   const leaderboardEntries = [
     { id: '1', name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1500048993953-d23a436266cf?q=80&w=100&auto=format&fit=crop', score: 785, position: 1 },
-    { id: '2', name: 'Emma Johnson', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop', score: 720, position: 2 },
+    { id: '2', name: 'Emma Johnson', avatar: 'https://images.unsplash.com/photo-1438761696357-6461ffad8d80?q=80&w=100&auto=format&fit=crop', score: 720, position: 2 },
     { id: '3', name: 'Michael Chen', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop', score: 695, position: 3 },
     { id: '4', name: currentUser?.name || 'Student', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop', score: 650, position: 4, isCurrentUser: true },
     { id: '5', name: 'Sophia Rodriguez', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop', score: 620, position: 5 },

@@ -91,6 +91,57 @@ const Navbar = () => {
     { to: "/about", label: "About", icon: <Users className="h-4 w-4 mr-2" /> },
   ];
 
+  const accountLinks = [
+    { 
+      to: "/students", 
+      label: "Dashboard", 
+      icon: <Home className="h-4 w-4 mr-2" />,
+      role: "student"
+    },
+    { 
+      to: "/students/messages", 
+      label: "Messages", 
+      icon: <MessageSquare className="h-4 w-4 mr-2" />,
+      role: "student"
+    },
+    { 
+      to: "/students/calendar", 
+      label: "Calendar", 
+      icon: <Calendar className="h-4 w-4 mr-2" />,
+      role: "student"
+    },
+    { 
+      to: "/students/settings", 
+      label: "Settings", 
+      icon: <Settings className="h-4 w-4 mr-2" />,
+      role: "student"
+    },
+    { 
+      to: "/tutors", 
+      label: "Dashboard", 
+      icon: <Home className="h-4 w-4 mr-2" />,
+      role: "tutor"
+    },
+    { 
+      to: "/tutors/messages", 
+      label: "Messages", 
+      icon: <MessageSquare className="h-4 w-4 mr-2" />,
+      role: "tutor"
+    },
+    { 
+      to: "/tutors/calendar", 
+      label: "Calendar", 
+      icon: <Calendar className="h-4 w-4 mr-2" />,
+      role: "tutor" 
+    },
+    { 
+      to: "/tutors/settings", 
+      label: "Settings", 
+      icon: <Settings className="h-4 w-4 mr-2" />,
+      role: "tutor"
+    },
+  ];
+
   const getActionButtons = () => {
     if (isAuthenticated) {
       return null; // Authenticated users don't need these action buttons since they already have access

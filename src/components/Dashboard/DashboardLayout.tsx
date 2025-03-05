@@ -1,46 +1,37 @@
-
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  MessageSquare,
-  Calendar,
-  FileText,
-  Settings,
-  Users,
-  GraduationCap,
-  BookOpen,
-  Bell,
-  LogOut,
-  Menu,
-} from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Calendar, FileText, Settings, Users, GraduationCap, BookOpen, Bell, LogOut, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
 }
-
-export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
+export const DashboardLayout = ({
+  children,
+  title
+}: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
-  const { conversations, getUnreadCount } = useChat();
-  const { toast } = useToast();
+  const {
+    currentUser,
+    logout
+  } = useAuth();
+  const {
+    conversations,
+    getUnreadCount
+  } = useChat();
+  const {
+    toast
+  } = useToast();
   const [totalUnread, setTotalUnread] = useState(0);
   const role = currentUser?.role || 'student';
   const isMobile = useIsMobile();
@@ -55,44 +46,91 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
       setTotalUnread(total);
     }
   }, [conversations, getUnreadCount]);
-
-  const tutorNavItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/tutors', notification: 0 },
-    { name: 'Messages', icon: MessageSquare, path: '/tutors/messages', notification: totalUnread },
-    { name: 'Calendar', icon: Calendar, path: '/tutors/calendar', notification: 0 },
-    { name: 'Resources', icon: FileText, path: '/tutors/resources', notification: 0 },
-    { name: 'Students', icon: Users, path: '/tutors/students', notification: 0 },
-    { name: 'Courses', icon: BookOpen, path: '/tutors/courses', notification: 0 },
-    { name: 'Settings', icon: Settings, path: '/tutors/settings', notification: 0 },
-  ];
-
-  const studentNavItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/students', notification: 0 },
-    { name: 'Messages', icon: MessageSquare, path: '/students/messages', notification: totalUnread },
-    { name: 'Calendar', icon: Calendar, path: '/students/calendar', notification: 0 },
-    { name: 'Courses', icon: BookOpen, path: '/students/courses', notification: 0 },
-    { name: 'Assignments', icon: FileText, path: '/students/assignments', notification: 2 },
-    { name: 'Tutors', icon: GraduationCap, path: '/students/tutors', notification: 0 },
-    { name: 'Settings', icon: Settings, path: '/students/settings', notification: 0 },
-  ];
-
+  const tutorNavItems = [{
+    name: 'Dashboard',
+    icon: LayoutDashboard,
+    path: '/tutors',
+    notification: 0
+  }, {
+    name: 'Messages',
+    icon: MessageSquare,
+    path: '/tutors/messages',
+    notification: totalUnread
+  }, {
+    name: 'Calendar',
+    icon: Calendar,
+    path: '/tutors/calendar',
+    notification: 0
+  }, {
+    name: 'Resources',
+    icon: FileText,
+    path: '/tutors/resources',
+    notification: 0
+  }, {
+    name: 'Students',
+    icon: Users,
+    path: '/tutors/students',
+    notification: 0
+  }, {
+    name: 'Courses',
+    icon: BookOpen,
+    path: '/tutors/courses',
+    notification: 0
+  }, {
+    name: 'Settings',
+    icon: Settings,
+    path: '/tutors/settings',
+    notification: 0
+  }];
+  const studentNavItems = [{
+    name: 'Dashboard',
+    icon: LayoutDashboard,
+    path: '/students',
+    notification: 0
+  }, {
+    name: 'Messages',
+    icon: MessageSquare,
+    path: '/students/messages',
+    notification: totalUnread
+  }, {
+    name: 'Calendar',
+    icon: Calendar,
+    path: '/students/calendar',
+    notification: 0
+  }, {
+    name: 'Courses',
+    icon: BookOpen,
+    path: '/students/courses',
+    notification: 0
+  }, {
+    name: 'Assignments',
+    icon: FileText,
+    path: '/students/assignments',
+    notification: 2
+  }, {
+    name: 'Tutors',
+    icon: GraduationCap,
+    path: '/students/tutors',
+    notification: 0
+  }, {
+    name: 'Settings',
+    icon: Settings,
+    path: '/students/settings',
+    notification: 0
+  }];
   const navItems = role === 'tutor' ? tutorNavItems : studentNavItems;
-
   const handleLogout = () => {
     logout();
     toast({
       title: "Logged out successfully",
-      description: "You have been logged out of your account",
+      description: "You have been logged out of your account"
     });
     navigate('/');
   };
-
   const handleNotificationClick = () => {
     toast({
       title: "Notifications",
-      description: totalUnread > 0 
-        ? `You have ${totalUnread} unread messages` 
-        : "You have no new notifications",
+      description: totalUnread > 0 ? `You have ${totalUnread} unread messages` : "You have no new notifications"
     });
   };
 
@@ -100,17 +138,13 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   useEffect(() => {
     const currentPath = location.pathname;
     const validPaths = navItems.map(item => item.path);
-    
+
     // Add sub-paths to valid paths
     const allValidPaths = [...validPaths];
     validPaths.forEach(path => {
       allValidPaths.push(`${path}/`);
     });
-    
-    const isCurrentPathValid = allValidPaths.some(path => 
-      currentPath === path || currentPath.startsWith(`${path}/`)
-    );
-    
+    const isCurrentPathValid = allValidPaths.some(path => currentPath === path || currentPath.startsWith(`${path}/`));
     if (!isCurrentPathValid) {
       const homePath = role === 'tutor' ? '/tutors' : '/students';
       navigate(homePath);
@@ -123,9 +157,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
       setSidebarOpen(false);
     }
   }, [location.pathname, isMobile]);
-
-  return (
-    <div className="min-h-screen bg-muted/20 flex flex-col md:flex-row">
+  return <div className="min-h-screen bg-muted/20 flex flex-col md:flex-row">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-background border-r h-screen sticky top-0 overflow-y-auto">
         <div className="p-4 sm:p-6 border-b">
@@ -133,32 +165,21 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         </div>
         
         <nav className="flex-1 py-4 sm:py-6 px-2 sm:px-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-            return (
-              <Link to={item.path} key={item.name}>
-                <Button
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3 font-normal",
-                    isActive ? "bg-muted" : ""
-                  )}
-                >
+          {navItems.map(item => {
+          const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+          return <Link to={item.path} key={item.name}>
+                <Button variant={isActive ? "secondary" : "ghost"} className={cn("w-full justify-start gap-3 font-normal", isActive ? "bg-muted" : "")}>
                   <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="flex-1 text-left truncate">{item.name}</span>
-                  {item.notification > 0 && (
-                    <Badge variant="destructive" className="ml-auto py-0 px-1.5 h-5 min-w-5 flex items-center justify-center">
+                  <span className="flex-1 text-left truncate text-stone-950 font-bold">{item.name}</span>
+                  {item.notification > 0 && <Badge variant="destructive" className="ml-auto py-0 px-1.5 h-5 min-w-5 flex items-center justify-center">
                       {item.notification}
-                    </Badge>
-                  )}
+                    </Badge>}
                 </Button>
-              </Link>
-            );
-          })}
+              </Link>;
+        })}
         </nav>
 
-        {currentUser && (
-          <div className="p-4 border-t mt-auto">
+        {currentUser && <div className="p-4 border-t mt-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar>
@@ -176,8 +197,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
-          </div>
-        )}
+          </div>}
       </aside>
 
       {/* Mobile Header */}
@@ -195,32 +215,21 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
             </div>
             
             <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-                return (
-                  <Link to={item.path} key={item.name} onClick={() => setSidebarOpen(false)}>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 font-normal",
-                        isActive ? "bg-muted" : ""
-                      )}
-                    >
+              {navItems.map(item => {
+              const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+              return <Link to={item.path} key={item.name} onClick={() => setSidebarOpen(false)}>
+                    <Button variant={isActive ? "secondary" : "ghost"} className={cn("w-full justify-start gap-3 font-normal", isActive ? "bg-muted" : "")}>
                       <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span className="flex-1 text-left truncate">{item.name}</span>
-                      {item.notification > 0 && (
-                        <Badge variant="destructive" className="ml-auto py-0 px-1.5 h-5 min-w-5 flex items-center justify-center">
+                      {item.notification > 0 && <Badge variant="destructive" className="ml-auto py-0 px-1.5 h-5 min-w-5 flex items-center justify-center">
                           {item.notification}
-                        </Badge>
-                      )}
+                        </Badge>}
                     </Button>
-                  </Link>
-                );
-              })}
+                  </Link>;
+            })}
             </nav>
 
-            {currentUser && (
-              <div className="p-4 border-t mt-auto">
+            {currentUser && <div className="p-4 border-t mt-auto">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -238,8 +247,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                     <LogOut className="h-5 w-5" />
                   </Button>
                 </div>
-              </div>
-            )}
+              </div>}
           </SheetContent>
         </Sheet>
         
@@ -249,16 +257,13 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
           <Button variant="ghost" size="icon" onClick={handleNotificationClick} className="h-9 w-9">
             <div className="relative">
               <Bell className="h-5 w-5" />
-              {totalUnread > 0 && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              {totalUnread > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                   {totalUnread}
-                </span>
-              )}
+                </span>}
             </div>
           </Button>
           
-          {currentUser && (
-            <DropdownMenu>
+          {currentUser && <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer h-8 w-8">
                   <AvatarImage src={currentUser.avatar} />
@@ -273,8 +278,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+            </DropdownMenu>}
         </div>
       </header>
 
@@ -287,11 +291,9 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               <Button variant="ghost" size="icon" onClick={handleNotificationClick}>
                 <div className="relative">
                   <Bell className="h-5 w-5" />
-                  {totalUnread > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  {totalUnread > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                       {totalUnread}
-                    </span>
-                  )}
+                    </span>}
                 </div>
               </Button>
             </div>
@@ -301,6 +303,5 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
           {children}
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -42,7 +41,6 @@ const Navbar = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
@@ -58,7 +56,6 @@ const Navbar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isMobile, isMenuOpen]);
 
-  // Close mobile menu when clicking outside
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (isMenuOpen && e.target instanceof HTMLElement) {
@@ -94,41 +91,34 @@ const Navbar = () => {
     { to: "/about", label: "About", icon: <Users className="h-4 w-4 mr-2" /> },
   ];
 
-  const callToActionLinks = [
-    { 
-      to: "/tutors", 
-      label: "For Tutors", 
-      icon: <GraduationCap className="h-4 w-4 mr-2" />,
-      role: "tutor"
-    },
-    { 
-      to: "/students", 
-      label: "For Students", 
-      icon: <Users className="h-4 w-4 mr-2" />,
-      role: "student" 
-    },
-  ];
-
-  const accountLinks = isAuthenticated ? [
-    { 
-      to: currentUser?.role === "tutor" ? "/tutors/messages" : "/students/messages", 
-      label: "Messages", 
-      icon: <MessageSquare className="h-4 w-4 mr-2" /> 
-    },
-    { 
-      to: currentUser?.role === "tutor" ? "/tutors/calendar" : "/students/calendar", 
-      label: "Calendar", 
-      icon: <Calendar className="h-4 w-4 mr-2" /> 
-    },
-    { 
-      to: currentUser?.role === "tutor" ? "/tutors/settings" : "/students/settings", 
-      label: "Settings", 
-      icon: <Settings className="h-4 w-4 mr-2" /> 
-    },
-  ] : [
-    { to: "/login", label: "Sign In", icon: <LogIn className="h-4 w-4 mr-2" /> },
-    { to: "/register", label: "Sign Up", icon: <UserPlus className="h-4 w-4 mr-2" /> },
-  ];
+  const getActionButtons = () => {
+    if (isAuthenticated) {
+      return null; // Authenticated users don't need these action buttons since they already have access
+    }
+    
+    return (
+      <>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/tutors")}
+          className="flex items-center"
+        >
+          <GraduationCap className="h-4 w-4 mr-2" />
+          For Tutors
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/students")}
+          className="flex items-center"
+        >
+          <Users className="h-4 w-4 mr-2" />
+          For Students
+        </Button>
+      </>
+    );
+  };
 
   return (
     <header
@@ -149,7 +139,6 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop navigation */}
           <nav className="ml-10 hidden md:flex gap-6">
             {navLinks.map((link) => (
               <Link
@@ -169,20 +158,8 @@ const Navbar = () => {
           </nav>
         </div>
 
-        {/* Desktop call to action */}
         <div className="hidden md:flex items-center gap-4">
-          {callToActionLinks.map((link) => (
-            <Button
-              key={link.to}
-              variant={location.pathname === link.to ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleNavigation(link.to, link.role)}
-              className="flex items-center"
-            >
-              {link.icon}
-              {link.label}
-            </Button>
-          ))}
+          {!isAuthenticated && getActionButtons()}
           
           {isAuthenticated ? (
             <TooltipProvider>
@@ -226,23 +203,28 @@ const Navbar = () => {
             </TooltipProvider>
           ) : (
             <div className="flex items-center gap-2">
-              {accountLinks.map((link) => (
-                <Button
-                  key={link.to}
-                  variant={link.to === "/register" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => navigate(link.to)}
-                  className="flex items-center"
-                >
-                  {link.icon}
-                  {link.label}
-                </Button>
-              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/login")}
+                className="flex items-center"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate("/register")}
+                className="flex items-center"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Sign Up
+              </Button>
             </div>
           )}
         </div>
 
-        {/* Mobile menu button */}
         <Button
           variant="ghost"
           size="icon"
@@ -258,7 +240,6 @@ const Navbar = () => {
         </Button>
       </div>
 
-      {/* Mobile navigation */}
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <nav className="container py-4 grid gap-2">
@@ -278,23 +259,24 @@ const Navbar = () => {
               </Link>
             ))}
             
-            <div className="border-t my-2 pt-2">
-              {callToActionLinks.map((link) => (
-                <button
-                  key={link.to}
-                  onClick={() => handleNavigation(link.to, link.role)}
-                  className={cn(
-                    "flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors",
-                    location.pathname === link.to
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-muted"
-                  )}
+            {!isAuthenticated && (
+              <div className="border-t my-2 pt-2">
+                <Link
+                  to="/tutors"
+                  className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
                 >
-                  {link.icon}
-                  {link.label}
-                </button>
-              ))}
-            </div>
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  For Tutors
+                </Link>
+                <Link
+                  to="/students"
+                  className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  For Students
+                </Link>
+              </div>
+            )}
             
             <div className="border-t my-2 pt-2">
               {isAuthenticated ? (
@@ -328,19 +310,22 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                accountLinks.map((link) => (
+                <>
                   <Link
-                    key={link.to}
-                    to={link.to}
-                    className={cn(
-                      "flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors",
-                      link.to === "/register" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                    )}
+                    to="/login"
+                    className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
                   >
-                    {link.icon}
-                    {link.label}
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
                   </Link>
-                ))
+                  <Link
+                    to="/register"
+                    className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors bg-primary text-primary-foreground"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Sign Up
+                  </Link>
+                </>
               )}
             </div>
           </nav>

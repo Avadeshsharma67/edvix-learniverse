@@ -1,4 +1,3 @@
-
 import MainLayout from '@/layouts/MainLayout';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
@@ -23,9 +22,7 @@ import {
 } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-
-// Let's add framer-motion as a dependency
-<lov-add-dependency>framer-motion@latest</lov-add-dependency>
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const [isTransformsVisible, setIsTransformsVisible] = useState(false);
@@ -35,6 +32,7 @@ const Index = () => {
   const statsRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   
   useEffect(() => {
     const observers = [];

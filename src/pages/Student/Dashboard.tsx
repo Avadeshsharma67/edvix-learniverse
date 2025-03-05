@@ -3,6 +3,9 @@ import { DashboardLayout } from '@/components/Dashboard/DashboardLayout';
 import { Users, MessageSquare, BookOpen, Award, Calendar, BarChart, Clock, TrendingUp, CheckCircle, FileText, Sparkles } from 'lucide-react';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
 import StudyProgressWidget from '@/components/Dashboard/StudyProgressWidget';
+import LeaderboardWidget from '@/components/Dashboard/LeaderboardWidget';
+import GoalsWidget from '@/components/Dashboard/GoalsWidget';
+import AchievementsWidget from '@/components/Dashboard/AchievementsWidget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -82,6 +85,58 @@ const StudentDashboard = () => {
     },
   ];
 
+  const achievements = [
+    {
+      id: '1',
+      title: 'Perfect Attendance',
+      description: 'Attended all scheduled sessions for 2 consecutive weeks',
+      date: 'Today',
+      icon: 'star',
+      points: 50,
+      isNew: true
+    },
+    {
+      id: '2',
+      title: 'Quiz Master',
+      description: 'Scored 90% or higher on 5 consecutive quizzes',
+      date: '3 days ago',
+      icon: 'trophy',
+      points: 100
+    },
+    {
+      id: '3',
+      title: 'Fast Learner',
+      description: 'Completed a course 30% faster than average',
+      date: '1 week ago',
+      icon: 'zap',
+      points: 75
+    },
+    {
+      id: '4',
+      title: 'Bookworm',
+      description: 'Read all recommended materials for your courses',
+      date: '2 weeks ago',
+      icon: 'book',
+      points: 50
+    },
+  ];
+
+  const leaderboardEntries = [
+    { id: '1', name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1500048993953-d23a436266cf?q=80&w=100&auto=format&fit=crop', score: 785, position: 1 },
+    { id: '2', name: 'Emma Johnson', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop', score: 720, position: 2 },
+    { id: '3', name: 'Michael Chen', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop', score: 695, position: 3 },
+    { id: '4', name: currentUser?.name || 'Student', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop', score: 650, position: 4, isCurrentUser: true },
+    { id: '5', name: 'Sophia Rodriguez', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop', score: 620, position: 5 },
+    { id: '6', name: 'James Williams', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop', score: 590, position: 6 },
+    { id: '7', name: 'Olivia Lee', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop', score: 585, position: 7 },
+  ];
+
+  const goals = [
+    { id: '1', title: 'Complete Advanced Mathematics course', progress: 78, dueDate: '3 weeks left', isCompleted: false },
+    { id: '2', title: 'Submit all pending assignments', progress: 65, dueDate: '1 week left', isCompleted: false },
+    { id: '3', title: 'Prepare for midterm exams', progress: 100, isCompleted: true },
+  ];
+
   const studyStats = {
     timeSpent: "18h 45m",
     completedLessons: 32,
@@ -91,14 +146,12 @@ const StudentDashboard = () => {
   };
 
   const fetchData = () => {
-    // Simulating API calls
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   };
 
   useEffect(() => {
-    // Redirect if not authenticated or not a student
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -112,7 +165,6 @@ const StudentDashboard = () => {
     fetchData();
     
     return () => {
-      // Cleanup
     };
   }, [isAuthenticated, currentUser, navigate]);
 
@@ -124,7 +176,6 @@ const StudentDashboard = () => {
         description: `Connecting to ${classToJoin.subject} virtual classroom...`,
       });
       
-      // Simulate joining process
       setTimeout(() => {
         toast({
           title: "Connected",
@@ -161,7 +212,6 @@ const StudentDashboard = () => {
       description: "Your learning progress report is being generated...",
     });
     
-    // Simulate download process
     setTimeout(() => {
       toast({
         title: "Report Ready",
@@ -172,6 +222,20 @@ const StudentDashboard = () => {
 
   const handleViewAllCourses = () => {
     navigate('/students/courses');
+  };
+
+  const handleAddGoal = () => {
+    toast({
+      title: "Add Goal",
+      description: "Goal creation feature coming soon!",
+    });
+  };
+
+  const handleViewLeaderboard = () => {
+    toast({
+      title: "Leaderboard",
+      description: "Full leaderboard feature coming soon!",
+    });
   };
 
   const containerVariants = {
@@ -198,7 +262,6 @@ const StudentDashboard = () => {
         animate="visible"
         variants={containerVariants}
       >
-        {/* Welcome Banner */}
         <motion.div 
           className="bg-gradient-to-r from-blue-600/10 via-indigo-500/10 to-purple-500/10 rounded-lg p-6 shadow-sm border relative overflow-hidden"
           variants={itemVariants}
@@ -226,7 +289,6 @@ const StudentDashboard = () => {
             </Button>
           </div>
           
-          {/* Decorative elements */}
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
           <div className="absolute -left-16 -top-16 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
         </motion.div>
@@ -274,9 +336,34 @@ const StudentDashboard = () => {
           </motion.div>
         </motion.div>
 
-        {/* Study Progress Widget */}
         <motion.div variants={itemVariants}>
           <StudyProgressWidget stats={studyStats} isLoading={isLoading} />
+        </motion.div>
+
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          variants={itemVariants}
+        >
+          <LeaderboardWidget
+            title="Student Leaderboard"
+            description="Rankings based on points and achievements"
+            entries={leaderboardEntries}
+            isLoading={isLoading}
+            onViewAll={handleViewLeaderboard}
+          />
+          
+          <AchievementsWidget
+            achievements={achievements}
+            isLoading={isLoading}
+          />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <GoalsWidget
+            goals={goals}
+            isLoading={isLoading}
+            onAddGoal={handleAddGoal}
+          />
         </motion.div>
 
         <motion.div variants={itemVariants}>

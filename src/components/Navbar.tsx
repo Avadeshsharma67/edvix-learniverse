@@ -8,10 +8,8 @@ import {
   Menu, 
   X, 
   Users, 
-  LogIn, 
-  UserPlus, 
-  BookOpen, 
   Home, 
+  BookOpen, 
   Calendar,
   MessageSquare,
   Settings,
@@ -144,7 +142,7 @@ const Navbar = () => {
 
   const getActionButtons = () => {
     if (isAuthenticated) {
-      return null; // Authenticated users don't need these action buttons since they already have access
+      return null; // Authenticated users don't need these action buttons
     }
     
     return (
@@ -153,19 +151,21 @@ const Navbar = () => {
           variant="outline"
           size="sm"
           onClick={() => navigate("/tutors")}
-          className="flex items-center"
+          className="flex items-center relative group overflow-hidden"
         >
-          <GraduationCap className="h-4 w-4 mr-2" />
-          For Tutors
+          <span className="absolute inset-0 w-0 bg-gradient-to-r from-accent/20 to-primary/20 transition-all duration-300 group-hover:w-full"></span>
+          <GraduationCap className="h-4 w-4 mr-2 relative z-10" />
+          <span className="relative z-10">For Tutors</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate("/students")}
-          className="flex items-center"
+          className="flex items-center relative group overflow-hidden"
         >
-          <Users className="h-4 w-4 mr-2" />
-          For Students
+          <span className="absolute inset-0 w-0 bg-gradient-to-r from-primary/20 to-accent/20 transition-all duration-300 group-hover:w-full"></span>
+          <Users className="h-4 w-4 mr-2 relative z-10" />
+          <span className="relative z-10">For Students</span>
         </Button>
       </>
     );
@@ -196,7 +196,7 @@ const Navbar = () => {
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-accent flex items-center",
+                  "text-sm font-medium transition-colors hover:text-accent flex items-center story-link",
                   location.pathname === link.to
                     ? "text-accent"
                     : "text-muted-foreground"
@@ -210,7 +210,7 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          {!isAuthenticated && getActionButtons()}
+          {getActionButtons()}
           
           {isAuthenticated ? (
             <TooltipProvider>
@@ -218,7 +218,7 @@ const Navbar = () => {
                 <TooltipTrigger asChild>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full overflow-hidden">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full overflow-hidden hover:bg-accent/10 transition-colors">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={currentUser?.avatar || ""} alt={currentUser?.name} />
                           <AvatarFallback>{currentUser?.name?.charAt(0) || "U"}</AvatarFallback>
@@ -233,12 +233,14 @@ const Navbar = () => {
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      {accountLinks.map((link) => (
-                        <DropdownMenuItem key={link.to} onClick={() => navigate(link.to)}>
-                          {link.icon}
-                          {link.label}
-                        </DropdownMenuItem>
-                      ))}
+                      {accountLinks
+                        .filter(link => link.role === currentUser?.role)
+                        .map((link) => (
+                          <DropdownMenuItem key={link.to} onClick={() => navigate(link.to)}>
+                            {link.icon}
+                            {link.label}
+                          </DropdownMenuItem>
+                        ))}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="h-4 w-4 mr-2" />
@@ -252,28 +254,7 @@ const Navbar = () => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/login")}
-                className="flex items-center"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => navigate("/register")}
-                className="flex items-center"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up
-              </Button>
-            </div>
-          )}
+          ) : null}
         </div>
 
         <Button
@@ -342,16 +323,18 @@ const Navbar = () => {
                       <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
                     </div>
                   </div>
-                  {accountLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
-                    >
-                      {link.icon}
-                      {link.label}
-                    </Link>
-                  ))}
+                  {accountLinks
+                    .filter(link => link.role === currentUser?.role)
+                    .map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
+                      >
+                        {link.icon}
+                        {link.label}
+                      </Link>
+                    ))}
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors text-destructive hover:bg-destructive/10"
@@ -360,24 +343,7 @@ const Navbar = () => {
                     Sign Out
                   </button>
                 </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors bg-primary text-primary-foreground"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Sign Up
-                  </Link>
-                </>
-              )}
+              ) : null}
             </div>
           </nav>
         </div>

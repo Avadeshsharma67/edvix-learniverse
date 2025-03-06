@@ -145,10 +145,23 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
   };
 
   const handleOTPChange = (index: number, value: string) => {
+    // Handle numeric input only
+    if (value && !/^\d*$/.test(value)) {
+      return;
+    }
+    
     if (value.length > 1) {
       // If pasting the entire code at once
       const pastedOTP = value.split('').slice(0, 6);
       setOtp([...pastedOTP, ...Array(6 - pastedOTP.length).fill('')]);
+      
+      // Focus the last field or submit if complete
+      if (pastedOTP.length === 6) {
+        document.getElementById('otp-submit-btn')?.focus();
+      } else if (pastedOTP.length > 0) {
+        const nextIndex = Math.min(pastedOTP.length, 5);
+        document.getElementById(`otp-${nextIndex}`)?.focus();
+      }
       return;
     }
     
@@ -162,6 +175,12 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       if (nextInput) {
         nextInput.focus();
       }
+    } else if (index === 5 && value) {
+      // Auto-submit if all digits are filled
+      const isComplete = newOTP.every(digit => digit !== '');
+      if (isComplete) {
+        document.getElementById('otp-submit-btn')?.focus();
+      }
     }
   };
 
@@ -171,6 +190,18 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       const prevInput = document.getElementById(`otp-${index - 1}`);
       if (prevInput) {
         prevInput.focus();
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      // Handle left arrow
+      const prevInput = document.getElementById(`otp-${index - 1}`);
+      if (prevInput) {
+        prevInput.focus();
+      }
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      // Handle right arrow
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      if (nextInput) {
+        nextInput.focus();
       }
     }
   };
@@ -207,6 +238,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="flex-1"
             disabled={loading}
+            autoFocus
           />
         </div>
         
@@ -252,7 +284,8 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               id={`otp-${index}`}
               type="text"
               inputMode="numeric"
-              maxLength={1}
+              pattern="[0-9]*"
+              maxLength={6} // Allow pasting the full code
               value={digit}
               onChange={(e) => handleOTPChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
@@ -277,6 +310,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               onClick={handleResendOTP}
               className="text-primary hover:underline"
               disabled={loading}
+              type="button"
             >
               Resend verification code
             </button>
@@ -295,6 +329,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
                 size="sm" 
                 onClick={handleAutoFillOTP} 
                 className="mt-2 bg-white dark:bg-gray-800"
+                type="button"
               >
                 Auto-fill Code
               </Button>
@@ -305,6 +340,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       
       <DialogFooter>
         <Button
+          id="otp-submit-btn"
           onClick={handleVerifyOTP}
           disabled={loading || otp.some(digit => !digit)}
           className="w-full"

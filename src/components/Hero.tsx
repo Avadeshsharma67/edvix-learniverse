@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import AnimatedButton from './AnimatedButton';
 import AnimatedTitle from './AnimatedTitle';
@@ -54,6 +53,13 @@ const Hero = () => {
       navigate(currentUser.role === 'student' ? '/students/tutors' : '/tutors');
     } else {
       navigate('/students');
+    }
+  };
+  
+  const handleScrollExplore = () => {
+    const featuresSection = document.querySelector('section');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
   
@@ -183,16 +189,25 @@ const Hero = () => {
           ))}
         </div>
         
-        {/* Scroll indicator */}
+        {/* Scroll indicator - Updated to be clickable */}
         <motion.div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center cursor-pointer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 1.2 }}
+          onClick={handleScrollExplore}
+          role="button"
+          aria-label="Scroll to explore"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleScrollExplore();
+            }
+          }}
         >
           <span className="text-xs text-secondary/50 mb-2">Scroll to explore</span>
           <motion.div 
-            className="w-6 h-10 border-2 border-secondary/20 rounded-full flex justify-center"
+            className="w-6 h-10 border-2 border-secondary/20 rounded-full flex justify-center hover:border-secondary/40 transition-colors"
             animate={{ y: [0, 5, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >

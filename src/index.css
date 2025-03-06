@@ -56,6 +56,10 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
   }
+  
+  button {
+    @apply relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-2 transition-all duration-300;
+  }
 }
 
 @layer components {
@@ -105,6 +109,63 @@
   .lazy-image.loaded {
     @apply blur-0;
   }
+  
+  /* Enhanced Button Styles */
+  .button-enhanced {
+    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-[1.02] 
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-accent/50 shadow-button 
+           hover:shadow-button-hover rounded-md;
+  }
+  
+  .button-shine {
+    @apply relative overflow-hidden;
+  }
+  
+  .button-shine::after {
+    @apply absolute top-0 left-[-100%] w-full h-full bg-gradient-shine transform skew-x-[-15deg];
+    content: "";
+    z-index: 1;
+    transition: all 0.75s ease;
+  }
+  
+  .button-shine:hover::after {
+    @apply left-[100%];
+  }
+  
+  /* Highlight Text Animation */
+  .highlight-text {
+    @apply relative inline-block;
+  }
+  
+  .highlight-text::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-[0.2em] bg-accent/30 transition-all duration-500 ease-out-expo;
+  }
+  
+  .highlight-text:hover::after {
+    @apply w-full;
+  }
+  
+  /* Card Hover Effects */
+  .hover-card {
+    @apply transition-all duration-300 ease-out-expo hover:shadow-float hover:-translate-y-2;
+  }
+  
+  /* Float Animation */
+  .float-animation {
+    @apply animate-float;
+  }
+  
+  /* Shimmer Effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  
+  .shimmer::before {
+    @apply absolute top-0 -left-full w-full h-full z-10 bg-gradient-shine;
+    content: '';
+    animation: shimmer 2s infinite;
+  }
 }
 
 .section-spacing {
@@ -120,11 +181,12 @@
 
 /* Card Hover Animation */
 .card-hover-effect {
-  transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .card-hover-effect:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 /* Button Hover Animation */
@@ -164,4 +226,119 @@
     transform: scale(4);
     opacity: 0;
   }
+}
+
+/* Improved Micro-interactions */
+.rotate-hover {
+  transition: transform 0.3s ease;
+}
+
+.rotate-hover:hover {
+  transform: rotate(5deg);
+}
+
+.scale-hover {
+  transition: transform 0.3s ease;
+}
+
+.scale-hover:hover {
+  transform: scale(1.05);
+}
+
+.push-effect {
+  transition: transform 0.2s ease;
+}
+
+.push-effect:active {
+  transform: scale(0.95);
+}
+
+/* Glow effect for important buttons */
+.glow-effect {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-effect::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::before {
+  opacity: 1;
+  filter: blur(8px);
+  transform: scale(1.1);
+}
+
+/* Improved focus styles */
+.focus-visible:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
+}
+
+/* 3D button effect */
+.button-3d {
+  transition: all 0.2s ease;
+  transform-style: preserve-3d;
+  transform: perspective(500px) translateZ(0);
+}
+
+.button-3d:hover {
+  transform: perspective(500px) translateZ(10px);
+}
+
+.button-3d:active {
+  transform: perspective(500px) translateZ(2px);
+}
+
+/* Gradient background animation */
+.gradient-animate {
+  background-size: 200% 200%;
+  background-image: linear-gradient(45deg, #4338ca, #3b82f6, #0ea5e9, #4338ca);
+  animation: gradientShift 5s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Text typing animation */
+.typing-animation {
+  border-right: 0.15em solid currentColor;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: currentColor }
+}
+
+/* Shimmer loading effect */
+.shimmer-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmerLoading 1.5s infinite;
+}
+
+@keyframes shimmerLoading {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

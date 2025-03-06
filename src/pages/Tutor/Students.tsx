@@ -30,7 +30,7 @@ const StudentCard = ({ student, onMessageClick, onViewProfile }: any) => {
               <CardDescription>{student.level || 'Undergraduate'}</CardDescription>
             </div>
           </div>
-          <Badge variant={progress > 75 ? "success" : progress > 50 ? "default" : "outline"}>
+          <Badge variant={progress > 75 ? "secondary" : progress > 50 ? "default" : "outline"}>
             {progress}% Progress
           </Badge>
         </div>

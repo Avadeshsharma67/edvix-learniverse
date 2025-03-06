@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle, Fingerprint, Smartphone, Phone, Check, Flag } from 'lucide-react';
@@ -21,6 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2 } from '@/components/ui/loader2';
 
 const emailFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -75,6 +75,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
+  const [demoOTP, setDemoOTP] = useState<string>('');
 
   const emailForm = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
@@ -129,6 +130,7 @@ export default function Login() {
             // Always send OTP for demo purposes
             sendEmailOTP(userEmail, (success) => {
               if (success) {
+                setDemoOTP(currentOTP || '');
                 setShowOtpInput(true);
                 setShowVerificationAlert(false);
               }
@@ -141,6 +143,7 @@ export default function Login() {
             // Send OTP for phone verification
             sendOTP(formattedPhoneNumber, (success) => {
               if (success) {
+                setDemoOTP(currentOTP || '');
                 setShowOtpInput(true);
                 setShowVerificationAlert(false);
                 
@@ -253,6 +256,12 @@ export default function Login() {
     }
   };
 
+  const handleAutoFillOTP = () => {
+    if (demoOTP && demoOTP.length === 6) {
+      setOtpDigits(demoOTP.split(''));
+    }
+  };
+
   const onEmailSubmit = () => {
     handleVerificationProgress();
   };
@@ -266,6 +275,7 @@ export default function Login() {
     if (authMethod === 'email') {
       sendEmailOTP(email, (success) => {
         if (success) {
+          setDemoOTP(currentOTP || '');
           toast({
             title: "OTP Resent",
             description: `A new verification code has been sent to ${email}`,
@@ -276,6 +286,7 @@ export default function Login() {
       const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
       sendOTP(formattedPhoneNumber, (success) => {
         if (success) {
+          setDemoOTP(currentOTP || '');
           toast({
             title: "OTP Resent",
             description: `A new verification code has been sent to ${formattedPhoneNumber}`,
@@ -365,8 +376,15 @@ export default function Login() {
                     className="w-full"
                     disabled={otpDigits.join('').length !== 6 || loading}
                   >
-                    {loading ? 'Verifying...' : 'Verify Code'}
-                    <Fingerprint className="ml-2 h-4 w-4" />
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...
+                      </>
+                    ) : (
+                      <>
+                        Verify Code <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
                   </Button>
                 </div>
                 
@@ -377,12 +395,23 @@ export default function Login() {
                   </button>
                 </div>
                 
-                {/* Debug info for development */}
-                <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <p className="text-xs text-muted-foreground text-center">
-                    For testing: Check the console for the OTP code that was generated
-                  </p>
-                </div>
+                <AlertComponent className="bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900">
+                  <Alert className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <AlertDescription>
+                    <div className="flex flex-col">
+                      <span>Demo Mode: Your verification code is:</span>
+                      <span className="font-mono text-lg font-bold">{demoOTP}</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleAutoFillOTP} 
+                        className="mt-2 bg-white dark:bg-gray-800"
+                      >
+                        Auto-fill Code
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </AlertComponent>
               </div>
             ) : (
               <>

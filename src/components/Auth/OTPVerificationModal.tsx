@@ -11,7 +11,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, CheckCircle, Loader2, Smartphone } from 'lucide-react';
+import { ArrowRight, CheckCircle, Loader2, Smartphone, Alert } from 'lucide-react';
+import { Alert as AlertComponent, AlertDescription } from '@/components/ui/alert';
 
 interface OTPVerificationModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
+  const [demoOTP, setDemoOTP] = useState<string>('');
   const { toast } = useToast();
 
   // For demo purposes, set a valid test OTP
@@ -68,6 +70,10 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
         throw new Error('Please enter a valid phone number');
       }
       
+      // Generate a random OTP for demo purposes
+      const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      setDemoOTP(generatedOTP);
+      
       // In a real app, this would call Supabase
       // For demo, we'll simulate the API call
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -100,10 +106,10 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       const enteredOTP = otp.join('');
       
       // In a real app, this would call Supabase to verify
-      // For demo, we'll check against our test OTP
+      // For demo, we'll check against our generated OTP or the test OTP
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      if (enteredOTP !== validTestOTP) {
+      if (enteredOTP !== demoOTP && enteredOTP !== validTestOTP) {
         throw new Error('Invalid verification code. Please try again.');
       }
       
@@ -173,6 +179,11 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleAutoFillOTP = () => {
+    // Auto-fill the OTP fields with the generated OTP
+    setOtp(demoOTP.split(''));
   };
 
   const renderPhoneInput = () => (
@@ -272,9 +283,24 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
           )}
         </div>
         
-        <div className="text-center text-xs text-muted-foreground mt-4 p-2 bg-muted/50 rounded-md">
-          For demo purposes, use code: {validTestOTP}
-        </div>
+        {/* Demo OTP Alert - In a real app, this would be removed */}
+        <AlertComponent className="bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900">
+          <Alert className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription>
+            <div className="flex flex-col">
+              <span>Demo Mode: Your verification code is:</span>
+              <span className="font-mono text-lg font-bold">{demoOTP}</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAutoFillOTP} 
+                className="mt-2 bg-white dark:bg-gray-800"
+              >
+                Auto-fill Code
+              </Button>
+            </div>
+          </AlertDescription>
+        </AlertComponent>
       </div>
       
       <DialogFooter>

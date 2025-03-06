@@ -1,4 +1,4 @@
-
+<lov-codelov-code>
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -552,3 +552,4 @@ export const useAuth = () => {
   }
   return context;
 };
+</lov-code>

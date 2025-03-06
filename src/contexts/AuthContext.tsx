@@ -35,6 +35,9 @@ interface AuthContextType {
   verifyOTP: (phone: string, otp: string, callback?: (success: boolean) => void) => void;
   sendOTP: (phone: string, callback?: (success: boolean) => void) => void;
   authLogs: AuthLogEntry[];
+  currentOTP: string | null;
+  sendEmailOTP: (email: string, callback?: (success: boolean) => void) => void;
+  verifyEmailOTP: (email: string, otp: string, callback?: (success: boolean) => void) => void;
 }
 
 export interface AuthLogEntry {
@@ -66,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authLogs, setAuthLogs] = useState<AuthLogEntry[]>(initialAuthLogs);
+  const [currentOTP, setCurrentOTP] = useState<string | null>(null);
   const { toast } = useToast();
 
   const isAuthenticated = !!currentUser;
@@ -117,6 +121,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthLogs(prevLogs => [newLogEntry, ...prevLogs]);
   };
 
+  // Generate a random 6-digit OTP
+  const generateOTP = (): string => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const login = (email: string, password: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
@@ -134,9 +143,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             description: "Please verify your identity with the code sent to your phone.",
           });
           
-          // In a real app, this would trigger sending an OTP
-          // For demo, we'll just prompt for verification in the callback
-          if (callback) callback(true);
+          // Send OTP for 2FA
+          sendEmailOTP(email, (success) => {
+            if (success && callback) callback(true);
+          });
+          
           setLoading(false);
           return;
         }
@@ -179,49 +190,123 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 1000);
   };
 
+  const sendEmailOTP = (email: string, callback?: (success: boolean) => void) => {
+    setLoading(true);
+    
+    // Generate a new OTP
+    const newOTP = generateOTP();
+    setCurrentOTP(newOTP);
+    
+    // Simulate API call to send OTP via email
+    setTimeout(() => {
+      console.log(`Email OTP for ${email}: ${newOTP}`);
+      
+      toast({
+        title: 'Verification Code Sent',
+        description: `A verification code has been sent to ${email}`,
+      });
+      
+      setLoading(false);
+      if (callback) callback(true);
+    }, 1000);
+  };
+
+  const verifyEmailOTP = (email: string, otp: string, callback?: (success: boolean) => void) => {
+    setLoading(true);
+    
+    // Simulate API call to verify OTP
+    setTimeout(() => {
+      const isValid = otp === currentOTP;
+      
+      if (isValid) {
+        toast({
+          title: 'Verification Successful',
+          description: 'Your email has been verified',
+        });
+        
+        const user = mockUsers.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase()
+        );
+
+        if (user) {
+          setCurrentUser(user);
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          logAuthEvent('login', 'email', user.role, true, user.id);
+        }
+        
+        setLoading(false);
+        setCurrentOTP(null);
+        if (callback) callback(true);
+      } else {
+        toast({
+          title: 'Verification Failed',
+          description: 'Invalid verification code',
+          variant: 'destructive',
+        });
+        
+        setLoading(false);
+        if (callback) callback(false);
+      }
+    }, 1000);
+  };
+
   const loginWithPhone = (phone: string, otp: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
-    // Simulate API call for phone authentication
+    // Verify the OTP first
     setTimeout(() => {
-      const user = mockUsers.find(
-        (u) => u.phone === phone && u.role === role
-      );
+      const isValid = otp === currentOTP;
+      
+      if (isValid) {
+        const user = mockUsers.find(
+          (u) => u.phone === phone && u.role === role
+        );
 
-      if (user) {
-        setCurrentUser(user);
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        toast({
-          title: 'Welcome back!',
-          description: `You have successfully logged in as ${user.name}`,
-        });
+        if (user) {
+          setCurrentUser(user);
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          toast({
+            title: 'Welcome back!',
+            description: `You have successfully logged in as ${user.name}`,
+          });
+          
+          logAuthEvent('login', 'phone', role, true, user.id);
+          
+          if (callback) callback(true);
+        } else {
+          // Create a new user if none exists (for demo purposes only)
+          const newUser: User = {
+            id: `${role.charAt(0)}${mockUsers.length + 1}`,
+            name: `New ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+            email: `${phone.replace(/\D/g, '')}@edvix.com`,
+            role,
+            avatar: '/placeholder.svg',
+            phone
+          };
+          
+          mockUsers.push(newUser);
+          setCurrentUser(newUser);
+          localStorage.setItem('currentUser', JSON.stringify(newUser));
+          
+          toast({
+            title: 'Welcome to EdVix!',
+            description: `You have successfully logged in using your phone number`,
+          });
+          
+          logAuthEvent('login', 'phone', role, true, newUser.id, 'New user created for demo');
+          
+          if (callback) callback(true);
+        }
         
-        logAuthEvent('login', 'phone', role, true, user.id);
-        
-        if (callback) callback(true);
+        setCurrentOTP(null);
       } else {
-        // Create a new user if none exists (for demo purposes only)
-        const newUser: User = {
-          id: `${role.charAt(0)}${mockUsers.length + 1}`,
-          name: `New ${role.charAt(0).toUpperCase() + role.slice(1)}`,
-          email: `${phone.replace(/\D/g, '')}@edvix.com`,
-          role,
-          avatar: '/placeholder.svg',
-          phone
-        };
-        
-        mockUsers.push(newUser);
-        setCurrentUser(newUser);
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-        
         toast({
-          title: 'Welcome to EdVix!',
-          description: `You have successfully logged in using your phone number`,
+          title: 'Verification Failed',
+          description: 'Invalid verification code',
+          variant: 'destructive',
         });
         
-        logAuthEvent('login', 'phone', role, true, newUser.id, 'New user created for demo');
-        
-        if (callback) callback(true);
+        if (callback) callback(false);
       }
       
       setLoading(false);
@@ -280,8 +365,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const registerWithPhone = (name: string, phone: string, otp: string, role: UserRole, callback?: (success: boolean) => void) => {
     setLoading(true);
     
-    // Simulate API call
+    // Verify the OTP first
     setTimeout(() => {
+      const isValid = otp === currentOTP;
+      
+      if (!isValid) {
+        toast({
+          title: 'Verification Failed',
+          description: 'Invalid verification code',
+          variant: 'destructive',
+        });
+        
+        setLoading(false);
+        if (callback) callback(false);
+        return;
+      }
+      
       // Check if phone already exists
       const existingUser = mockUsers.find(
         (u) => u.phone === phone
@@ -319,6 +418,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       logAuthEvent('register', 'phone', role, true, newUser.id);
+      setCurrentOTP(null);
       
       if (callback) callback(true);
       setLoading(false);
@@ -342,10 +442,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendOTP = (phone: string, callback?: (success: boolean) => void) => {
     setLoading(true);
     
+    // Generate a new OTP
+    const newOTP = generateOTP();
+    setCurrentOTP(newOTP);
+    
     // Simulate API call to send OTP
     setTimeout(() => {
       // In a real app, this would send an OTP via SMS
-      console.log('Sending OTP to:', phone);
+      console.log(`Phone OTP for ${phone}: ${newOTP}`);
       
       toast({
         title: 'Verification Code Sent',
@@ -362,10 +466,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Simulate API call to verify OTP
     setTimeout(() => {
-      // For demo purposes, any OTP will work
-      const validOTP = '123456'; // For demo only
+      const isValid = otp === currentOTP;
       
-      if (otp === validOTP) {
+      if (isValid) {
         toast({
           title: 'Verification Successful',
           description: 'Your phone number has been verified',
@@ -378,6 +481,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         }
         
+        setCurrentOTP(null);
         setLoading(false);
         if (callback) callback(true);
       } else {
@@ -431,6 +535,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyOTP,
         sendOTP,
         authLogs,
+        currentOTP,
+        sendEmailOTP,
+        verifyEmailOTP,
       }}
     >
       {children}

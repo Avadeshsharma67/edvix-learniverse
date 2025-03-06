@@ -37,12 +37,14 @@ const formSchema = z.object({
 
 export default function Register() {
   const [activeTab, setActiveTab] = useState<UserRole>('student');
-  const { register, isAuthenticated, loading } = useAuth();
+  const { register, isAuthenticated, loading, sendEmailOTP, currentOTP } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [verificationSent, setVerificationSent] = useState(false);
   const [registrationStep, setRegistrationStep] = useState(1);
   const [verificationProgress, setVerificationProgress] = useState(0);
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,6 +66,26 @@ export default function Register() {
   }, [isAuthenticated, activeTab, navigate]);
 
   const simulateEmailVerification = () => {
+    const values = form.getValues();
+    
+    // For demo, let's show OTP verification 50% of the time
+    const shouldRequireOtp = Math.random() > 0.5;
+    
+    if (shouldRequireOtp) {
+      // Send verification code
+      sendEmailOTP(values.email, (success) => {
+        if (success) {
+          setOtpRequired(true);
+          toast({
+            title: "Verification Required",
+            description: `Please enter the verification code sent to ${values.email}`,
+          });
+        }
+      });
+      return;
+    }
+    
+    // Continue with regular verification animation
     setVerificationSent(true);
     setVerificationProgress(0);
     
@@ -99,6 +121,39 @@ export default function Register() {
     });
   };
 
+  const verifyOtpAndRegister = () => {
+    if (otpValue === currentOTP) {
+      // OTP is valid, proceed with registration
+      setOtpRequired(false);
+      
+      // Show verification animation
+      setVerificationSent(true);
+      setVerificationProgress(0);
+      
+      const interval = setInterval(() => {
+        setVerificationProgress(prev => {
+          const newProgress = prev + 10;
+          
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              handleFinalRegistration();
+            }, 500);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 50);
+    } else {
+      // Invalid OTP
+      toast({
+        title: "Invalid Verification Code",
+        description: "The code you entered is incorrect. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (registrationStep === 1) {
       setRegistrationStep(2);
@@ -131,7 +186,7 @@ export default function Register() {
           <CardTitle className="text-2xl font-bold">Create your EdVix account</CardTitle>
           <CardDescription>Enter your information to create an account</CardDescription>
           
-          {registrationStep > 1 && !verificationSent && (
+          {registrationStep > 1 && !verificationSent && !otpRequired && (
             <div className="pt-2">
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Progress</span>
@@ -170,6 +225,67 @@ export default function Register() {
                   <h3 className="text-lg font-semibold">Account verification in progress</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     We're setting up your account. This will just take a moment.
+                  </p>
+                </div>
+              </div>
+            ) : otpRequired ? (
+              <div className="space-y-4">
+                <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-900">
+                  <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <AlertDescription className="text-amber-700 dark:text-amber-400">
+                    Please enter the verification code sent to your email
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="space-y-3">
+                  <label htmlFor="otp" className="block text-sm font-medium">
+                    Verification Code
+                  </label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={otpValue}
+                    onChange={(e) => setOtpValue(e.target.value)}
+                    className="text-center text-lg letter-spacing-2"
+                    maxLength={6}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Check your email for a 6-digit verification code
+                  </p>
+                </div>
+                
+                <div className="flex flex-col space-y-2">
+                  <Button
+                    onClick={verifyOtpAndRegister}
+                    disabled={otpValue.length !== 6 || loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Continue'}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      const email = form.getValues().email;
+                      sendEmailOTP(email);
+                      toast({
+                        title: "Code Resent",
+                        description: `A new verification code has been sent to ${email}`,
+                      });
+                    }}
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    Resend Code
+                  </Button>
+                </div>
+                
+                {/* Debug info for testing */}
+                <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
+                  <p className="text-xs text-muted-foreground text-center">
+                    For testing: Check the console for the OTP code that was generated
                   </p>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, ArrowRight, Shield, AlertCircle, Fingerprint, Smartphone, Phone, Check, Flag } from 'lucide-react';
@@ -61,7 +62,7 @@ export default function Login() {
   const [activeTab, setActiveTab] = useState<UserRole>('student');
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodes[0]);
-  const { login, loginWithPhone, isAuthenticated, loading } = useAuth();
+  const { login, loginWithPhone, isAuthenticated, loading, sendOTP, verifyOTP, sendEmailOTP, verifyEmailOTP, currentOTP } = useAuth();
   const { setCurrentUser } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ export default function Login() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpValue, setOtpValue] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
 
@@ -118,23 +120,35 @@ export default function Login() {
         
         if (newProgress >= 100) {
           clearInterval(interval);
+          
+          // Different behavior based on auth method
           if (authMethod === 'email') {
-            if (Math.random() > 0.5) {
-              setShowOtpInput(true);
-              return 100;
-            } else {
-              completeLogin();
-              return 100;
-            }
+            const userEmail = emailForm.getValues().email;
+            setEmail(userEmail);
+            
+            // Always send OTP for demo purposes
+            sendEmailOTP(userEmail, (success) => {
+              if (success) {
+                setShowOtpInput(true);
+                setShowVerificationAlert(false);
+              }
+            });
+            
+            return 100;
           } else if (authMethod === 'phone') {
-            setShowOtpInput(true);
+            const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
             
-            const testOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-            console.log(`TEST OTP CODE: ${testOtpCode} (For testing purposes only)`);
-            
-            toast({
-              title: "OTP Sent!",
-              description: `Verification code sent to ${selectedCountryCode.value} ${phoneNumber}`,
+            // Send OTP for phone verification
+            sendOTP(formattedPhoneNumber, (success) => {
+              if (success) {
+                setShowOtpInput(true);
+                setShowVerificationAlert(false);
+                
+                toast({
+                  title: "OTP Sent!",
+                  description: `Verification code sent to ${formattedPhoneNumber}`,
+                });
+              }
             });
             
             return 100;
@@ -150,14 +164,51 @@ export default function Login() {
     const fullOtp = otpDigits.join('');
     
     if (fullOtp.length === 6) {
-      setShowOtpInput(false);
-      setTimeout(() => {
-        if (authMethod === 'email') {
-          completeLogin();
-        } else if (authMethod === 'phone') {
-          completePhoneLogin(fullOtp);
-        }
-      }, 500);
+      if (authMethod === 'email') {
+        verifyEmailOTP(email, fullOtp, (success) => {
+          if (success) {
+            setShowOtpInput(false);
+            
+            // Update chat context
+            const user = activeTab === 'student' 
+              ? students.find(s => s.email?.toLowerCase() === email.toLowerCase())
+              : tutors.find(t => t.email?.toLowerCase() === email.toLowerCase());
+            
+            if (user) setCurrentUser(user);
+            
+            navigate(activeTab === 'tutor' ? '/tutors' : '/students');
+            
+            toast({
+              title: "Login successful",
+              description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
+            });
+          }
+        });
+      } else if (authMethod === 'phone') {
+        const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
+        loginWithPhone(formattedPhoneNumber, fullOtp, activeTab, (success) => {
+          if (success) {
+            setShowOtpInput(false);
+            
+            // Create a mock user for the chat context
+            const mockUser = {
+              id: `${activeTab === 'student' ? 's' : 't'}-phone-${Date.now()}`,
+              name: `${activeTab === 'student' ? 'Student' : 'Tutor'} User`,
+              avatar: '/placeholder.svg',
+              role: activeTab,
+              email: `${formattedPhoneNumber.replace(/\D/g, '')}@edvix.com`
+            };
+            
+            setCurrentUser(mockUser);
+            navigate(activeTab === 'tutor' ? '/tutors' : '/students');
+            
+            toast({
+              title: "Login successful",
+              description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
+            });
+          }
+        });
+      }
     } else {
       toast({
         title: "Invalid OTP",
@@ -202,63 +253,6 @@ export default function Login() {
     }
   };
 
-  const completeLogin = () => {
-    const values = emailForm.getValues();
-    login(values.email, values.password, activeTab, (success) => {
-      if (success) {
-        if (activeTab === 'student') {
-          const student = students.find(s => s.email?.toLowerCase() === values.email.toLowerCase());
-          if (student) setCurrentUser(student);
-        } else {
-          const tutor = tutors.find(t => t.email?.toLowerCase() === values.email.toLowerCase());
-          if (tutor) setCurrentUser(tutor);
-        }
-        
-        setShowVerificationAlert(false);
-        setVerificationStep(null);
-        
-        navigate(activeTab === 'tutor' ? '/tutors' : '/students');
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
-        });
-      } else {
-        setShowVerificationAlert(false);
-        setVerificationStep(null);
-      }
-    });
-  };
-
-  const completePhoneLogin = (otpCode: string) => {
-    const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
-    loginWithPhone(formattedPhoneNumber, otpCode, activeTab, (success) => {
-      if (success) {
-        const mockUser = {
-          id: `${activeTab === 'student' ? 's' : 't'}-phone-${Date.now()}`,
-          name: `${activeTab === 'student' ? 'Student' : 'Tutor'} User`,
-          avatar: '/placeholder.svg',
-          role: activeTab,
-          email: `${formattedPhoneNumber.replace(/\D/g, '')}@edvix.com`
-        };
-        
-        setCurrentUser(mockUser);
-        setShowVerificationAlert(false);
-        setVerificationStep(null);
-        
-        navigate(activeTab === 'tutor' ? '/tutors' : '/students');
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome to EdVix ${activeTab === 'tutor' ? 'tutor' : 'student'} dashboard!`,
-        });
-      } else {
-        setShowVerificationAlert(false);
-        setVerificationStep(null);
-      }
-    });
-  };
-
   const onEmailSubmit = () => {
     handleVerificationProgress();
   };
@@ -269,13 +263,26 @@ export default function Login() {
   };
 
   const resendOtp = () => {
-    toast({
-      title: "OTP Resent",
-      description: `A new verification code has been sent to ${selectedCountryCode.value} ${phoneNumber}`,
-    });
-    
-    const newTestOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`NEW TEST OTP CODE: ${newTestOtp} (For testing purposes only)`);
+    if (authMethod === 'email') {
+      sendEmailOTP(email, (success) => {
+        if (success) {
+          toast({
+            title: "OTP Resent",
+            description: `A new verification code has been sent to ${email}`,
+          });
+        }
+      });
+    } else {
+      const formattedPhoneNumber = `${selectedCountryCode.value}${phoneNumber}`;
+      sendOTP(formattedPhoneNumber, (success) => {
+        if (success) {
+          toast({
+            title: "OTP Resent",
+            description: `A new verification code has been sent to ${formattedPhoneNumber}`,
+          });
+        }
+      });
+    }
   };
 
   return (
@@ -318,6 +325,9 @@ export default function Login() {
                   <h3 className="text-lg font-semibold">Verification Code</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     We've sent a verification code to your {authMethod === 'email' ? 'email' : 'phone'}
+                    {authMethod === 'email' && (
+                      <span className="font-medium"> ({email})</span>
+                    )}
                     {authMethod === 'phone' && (
                       <span className="font-medium"> ({selectedCountryCode.value} {phoneNumber})</span>
                     )}
@@ -353,9 +363,9 @@ export default function Login() {
                   <Button 
                     onClick={handleOtpSubmit} 
                     className="w-full"
-                    disabled={otpDigits.join('').length !== 6}
+                    disabled={otpDigits.join('').length !== 6 || loading}
                   >
-                    Verify Code
+                    {loading ? 'Verifying...' : 'Verify Code'}
                     <Fingerprint className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -365,6 +375,13 @@ export default function Login() {
                   <button onClick={resendOtp} className="text-primary hover:underline font-medium">
                     Resend
                   </button>
+                </div>
+                
+                {/* Debug info for development */}
+                <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
+                  <p className="text-xs text-muted-foreground text-center">
+                    For testing: Check the console for the OTP code that was generated
+                  </p>
                 </div>
               </div>
             ) : (

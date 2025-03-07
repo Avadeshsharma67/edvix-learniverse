@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import About from "./pages/About";
@@ -36,8 +36,48 @@ import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import Faq from "./pages/Faq";
 import AuthLogs from './pages/Admin/AuthLogs';
+import { useEffect } from "react";
+import { useToast } from "./components/ui/use-toast";
 
 const queryClient = new QueryClient();
+
+// Auth redirect handler
+const AuthRedirector = () => {
+  const { isAuthenticated, currentUser } = useAuth();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // If user is authenticated and hits the root route, redirect to their dashboard
+    if (isAuthenticated && location.pathname === '/') {
+      // Check if there's a scheduleRedirect pending
+      const scheduleRedirect = localStorage.getItem('scheduleRedirect');
+      
+      if (scheduleRedirect) {
+        try {
+          const tutor = JSON.parse(scheduleRedirect);
+          
+          if (currentUser?.role === 'student') {
+            // Clear the redirect to prevent it from happening again
+            localStorage.removeItem('scheduleRedirect');
+            
+            // Show a toast about the redirect
+            setTimeout(() => {
+              toast({
+                title: "Schedule with " + tutor.name,
+                description: `You can now schedule a session with ${tutor.name}.`,
+              });
+            }, 1000);
+          }
+        } catch (error) {
+          console.error('Error parsing schedule redirect data:', error);
+        }
+      }
+    }
+  }, [isAuthenticated, location.pathname, currentUser, toast]);
+
+  return null;
+};
 
 // Protected Route component
 const ProtectedRoute = ({ element, requiredRole }: { element: JSX.Element, requiredRole?: 'student' | 'tutor' }) => {
@@ -152,6 +192,7 @@ const App = () => (
           <ChatProvider>
             <Toaster />
             <Sonner />
+            <AuthRedirector />
             <AppRoutes />
           </ChatProvider>
         </AuthProvider>

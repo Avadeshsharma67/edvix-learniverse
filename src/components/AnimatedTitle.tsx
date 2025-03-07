@@ -80,8 +80,7 @@ const AnimatedTitle = ({
       )}
     >
       {children}
-      <style>
-        {`
+      <style jsx>{`
         .highlight-animation {
           position: relative;
         }
@@ -99,8 +98,7 @@ const AnimatedTitle = ({
         .highlight-animation.animate-highlight::after {
           width: 100%;
         }
-        `}
-      </style>
+      `}</style>
     </Element>
   );
 };

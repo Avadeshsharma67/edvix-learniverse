@@ -91,7 +91,6 @@ export default {
         "shimmer": "shimmer 2s infinite",
         "slide-right": "slide-right 0.5s ease-out forwards",
         "slide-left": "slide-left 0.5s ease-out forwards",
-        "ripple": "ripple 0.6s linear forwards",
       },
       keyframes: {
         "accordion-down": {
@@ -143,11 +142,6 @@ export default {
         "slide-left": {
           "0%": { transform: "translateX(20px)", opacity: "0" },
           "100%": { transform: "translateX(0)", opacity: "1" },
-        },
-        "ripple": {
-          "0%": { transform: "scale(0)", opacity: "0.2" },
-          "50%": { transform: "scale(1.5)", opacity: "0.1" },
-          "100%": { transform: "scale(2.5)", opacity: "0" },
         },
       },
       transitionTimingFunction: {

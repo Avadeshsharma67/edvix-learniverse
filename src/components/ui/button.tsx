@@ -23,11 +23,6 @@ const buttonVariants = cva(
         success: "bg-green-500 text-white hover:bg-green-600 shadow-md hover:shadow-lg",
         warning: "bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg",
         info: "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg",
-        gradient: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg",
-        "gradient-purple": "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg",
-        "gradient-green": "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-md hover:shadow-lg",
-        "3d": "bg-primary text-primary-foreground shadow-[0_6px_0_0] shadow-primary/80 hover:shadow-[0_3px_0_0] hover:shadow-primary/80 hover:translate-y-[3px] active:translate-y-[6px] active:shadow-none transition-all duration-150",
-        shine: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-shine before:z-[-1]",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -40,12 +35,9 @@ const buttonVariants = cva(
         none: "",
         pulse: "animate-pulse",
         bounce: "animate-bounce",
-        float: "animate-float",
         pulse_subtle: "animate-pulse-subtle",
         fade_in: "animate-fade-in",
         slide_up: "animate-slide-up",
-        scale: "hover:scale-105 active:scale-95 transition-transform duration-200",
-        ripple: "after:content-[''] after:absolute after:bg-white after:opacity-0 after:h-full after:w-full after:top-0 after:left-0 after:rounded-md hover:after:animate-ripple after:z-[-1]",
       }
     },
     defaultVariants: {

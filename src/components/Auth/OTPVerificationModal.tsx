@@ -11,8 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, CheckCircle, Loader2, Smartphone, Alert } from 'lucide-react';
-import { Alert as AlertComponent, AlertDescription } from '@/components/ui/alert';
+import { ArrowRight, CheckCircle, Loader2, Smartphone } from 'lucide-react';
 
 interface OTPVerificationModalProps {
   open: boolean;
@@ -33,7 +32,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
-  const [demoOTP, setDemoOTP] = useState<string>('');
   const { toast } = useToast();
 
   // For demo purposes, set a valid test OTP
@@ -70,10 +68,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
         throw new Error('Please enter a valid phone number');
       }
       
-      // Generate a random OTP for demo purposes
-      const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      setDemoOTP(generatedOTP);
-      
       // In a real app, this would call Supabase
       // For demo, we'll simulate the API call
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -106,10 +100,10 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       const enteredOTP = otp.join('');
       
       // In a real app, this would call Supabase to verify
-      // For demo, we'll check against our generated OTP or the test OTP
+      // For demo, we'll check against our test OTP
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      if (enteredOTP !== demoOTP && enteredOTP !== validTestOTP) {
+      if (enteredOTP !== validTestOTP) {
         throw new Error('Invalid verification code. Please try again.');
       }
       
@@ -145,23 +139,10 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
   };
 
   const handleOTPChange = (index: number, value: string) => {
-    // Handle numeric input only
-    if (value && !/^\d*$/.test(value)) {
-      return;
-    }
-    
     if (value.length > 1) {
       // If pasting the entire code at once
       const pastedOTP = value.split('').slice(0, 6);
       setOtp([...pastedOTP, ...Array(6 - pastedOTP.length).fill('')]);
-      
-      // Focus the last field or submit if complete
-      if (pastedOTP.length === 6) {
-        document.getElementById('otp-submit-btn')?.focus();
-      } else if (pastedOTP.length > 0) {
-        const nextIndex = Math.min(pastedOTP.length, 5);
-        document.getElementById(`otp-${nextIndex}`)?.focus();
-      }
       return;
     }
     
@@ -175,12 +156,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       if (nextInput) {
         nextInput.focus();
       }
-    } else if (index === 5 && value) {
-      // Auto-submit if all digits are filled
-      const isComplete = newOTP.every(digit => digit !== '');
-      if (isComplete) {
-        document.getElementById('otp-submit-btn')?.focus();
-      }
     }
   };
 
@@ -191,18 +166,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       if (prevInput) {
         prevInput.focus();
       }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      // Handle left arrow
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      if (prevInput) {
-        prevInput.focus();
-      }
-    } else if (e.key === 'ArrowRight' && index < 5) {
-      // Handle right arrow
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) {
-        nextInput.focus();
-      }
     }
   };
 
@@ -210,11 +173,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleAutoFillOTP = () => {
-    // Auto-fill the OTP fields with the generated OTP
-    setOtp(demoOTP.split(''));
   };
 
   const renderPhoneInput = () => (
@@ -238,7 +196,6 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="flex-1"
             disabled={loading}
-            autoFocus
           />
         </div>
         
@@ -284,8 +241,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               id={`otp-${index}`}
               type="text"
               inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={6} // Allow pasting the full code
+              maxLength={1}
               value={digit}
               onChange={(e) => handleOTPChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
@@ -310,37 +266,19 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               onClick={handleResendOTP}
               className="text-primary hover:underline"
               disabled={loading}
-              type="button"
             >
               Resend verification code
             </button>
           )}
         </div>
         
-        {/* Demo OTP Alert - In a real app, this would be removed */}
-        <AlertComponent className="bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900">
-          <Alert className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription>
-            <div className="flex flex-col">
-              <span>Demo Mode: Your verification code is:</span>
-              <span className="font-mono text-lg font-bold">{demoOTP}</span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAutoFillOTP} 
-                className="mt-2 bg-white dark:bg-gray-800"
-                type="button"
-              >
-                Auto-fill Code
-              </Button>
-            </div>
-          </AlertDescription>
-        </AlertComponent>
+        <div className="text-center text-xs text-muted-foreground mt-4 p-2 bg-muted/50 rounded-md">
+          For demo purposes, use code: {validTestOTP}
+        </div>
       </div>
       
       <DialogFooter>
         <Button
-          id="otp-submit-btn"
           onClick={handleVerifyOTP}
           disabled={loading || otp.some(digit => !digit)}
           className="w-full"

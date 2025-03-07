@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, User, ArrowRight, Shield, Check, UserCheck, Smartphone, ChevronRight } from 'lucide-react';
@@ -44,7 +45,6 @@ export default function Register() {
   const [verificationProgress, setVerificationProgress] = useState(0);
   const [otpRequired, setOtpRequired] = useState(false);
   const [otpValue, setOtpValue] = useState('');
-  const [demoOTP, setDemoOTP] = useState<string>('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,6 +58,7 @@ export default function Register() {
     },
   });
 
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate(activeTab === 'tutor' ? '/tutors' : '/students');
@@ -67,12 +68,13 @@ export default function Register() {
   const simulateEmailVerification = () => {
     const values = form.getValues();
     
+    // For demo, let's show OTP verification 50% of the time
     const shouldRequireOtp = Math.random() > 0.5;
     
     if (shouldRequireOtp) {
+      // Send verification code
       sendEmailOTP(values.email, (success) => {
         if (success) {
-          setDemoOTP(currentOTP || '');
           setOtpRequired(true);
           toast({
             title: "Verification Required",
@@ -83,6 +85,7 @@ export default function Register() {
       return;
     }
     
+    // Continue with regular verification animation
     setVerificationSent(true);
     setVerificationProgress(0);
     
@@ -106,10 +109,13 @@ export default function Register() {
     const values = form.getValues();
     register(values.name, values.email, values.password, activeTab, (success) => {
       if (success) {
+        // Welcome toast
         toast({
           title: "Registration successful",
           description: `Welcome to EdVix, ${values.name}!`,
         });
+        
+        // Redirect to appropriate dashboard
         navigate(activeTab === 'tutor' ? '/tutors' : '/students');
       }
     });
@@ -117,8 +123,10 @@ export default function Register() {
 
   const verifyOtpAndRegister = () => {
     if (otpValue === currentOTP) {
+      // OTP is valid, proceed with registration
       setOtpRequired(false);
       
+      // Show verification animation
       setVerificationSent(true);
       setVerificationProgress(0);
       
@@ -137,6 +145,7 @@ export default function Register() {
         });
       }, 50);
     } else {
+      // Invalid OTP
       toast({
         title: "Invalid Verification Code",
         description: "The code you entered is incorrect. Please try again.",
@@ -246,24 +255,6 @@ export default function Register() {
                   </p>
                 </div>
                 
-                <AlertComponent className="bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900">
-                  <Alert className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <AlertDescription>
-                    <div className="flex flex-col">
-                      <span>Demo Mode: Your verification code is:</span>
-                      <span className="font-mono text-lg font-bold">{demoOTP}</span>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setOtpValue(demoOTP)} 
-                        className="mt-2 bg-white dark:bg-gray-800"
-                      >
-                        Auto-fill Code
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </AlertComponent>
-                
                 <div className="flex flex-col space-y-2">
                   <Button
                     onClick={verifyOtpAndRegister}
@@ -278,14 +269,10 @@ export default function Register() {
                     variant="ghost"
                     onClick={() => {
                       const email = form.getValues().email;
-                      sendEmailOTP(email, (success) => {
-                        if (success) {
-                          setDemoOTP(currentOTP || '');
-                          toast({
-                            title: "Code Resent",
-                            description: `A new verification code has been sent to ${email}`,
-                          });
-                        }
+                      sendEmailOTP(email);
+                      toast({
+                        title: "Code Resent",
+                        description: `A new verification code has been sent to ${email}`,
                       });
                     }}
                     disabled={loading}
@@ -293,6 +280,13 @@ export default function Register() {
                   >
                     Resend Code
                   </Button>
+                </div>
+                
+                {/* Debug info for testing */}
+                <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
+                  <p className="text-xs text-muted-foreground text-center">
+                    For testing: Check the console for the OTP code that was generated
+                  </p>
                 </div>
               </div>
             ) : (

@@ -1,353 +1,145 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { 
-  GraduationCap, 
-  Menu, 
-  X, 
-  Users, 
-  Home, 
-  BookOpen, 
-  Calendar,
-  MessageSquare,
-  Settings,
-  LogOut
-} from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import AnimatedButton from './AnimatedButton';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { currentUser, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (!isMobile && isMenuOpen) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isMobile, isMenuOpen]);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (isMenuOpen && e.target instanceof HTMLElement) {
-        const navbar = document.getElementById("navbar");
-        if (navbar && !navbar.contains(e.target)) {
-          setIsMenuOpen(false);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [isMenuOpen]);
-
-  const handleNavigation = (path: string, role?: string) => {
-    if (role && !isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    navigate(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
+  
   const navLinks = [
-    { to: "/", label: "Home", icon: <Home className="h-4 w-4 mr-2" /> },
-    { to: "/marketplace", label: "Marketplace", icon: <BookOpen className="h-4 w-4 mr-2" /> },
-    { to: "/about", label: "About", icon: <Users className="h-4 w-4 mr-2" /> },
+    { name: 'Home', path: '/' },
+    { name: 'Marketplace', path: '/marketplace' },
+    { name: 'Tutors', path: '/tutors' },
+    { name: 'About', path: '/about' },
   ];
-
-  const accountLinks = [
-    { 
-      to: "/students", 
-      label: "Dashboard", 
-      icon: <Home className="h-4 w-4 mr-2" />,
-      role: "student"
-    },
-    { 
-      to: "/students/messages", 
-      label: "Messages", 
-      icon: <MessageSquare className="h-4 w-4 mr-2" />,
-      role: "student"
-    },
-    { 
-      to: "/students/calendar", 
-      label: "Calendar", 
-      icon: <Calendar className="h-4 w-4 mr-2" />,
-      role: "student"
-    },
-    { 
-      to: "/students/settings", 
-      label: "Settings", 
-      icon: <Settings className="h-4 w-4 mr-2" />,
-      role: "student"
-    },
-    { 
-      to: "/tutors", 
-      label: "Dashboard", 
-      icon: <Home className="h-4 w-4 mr-2" />,
-      role: "tutor"
-    },
-    { 
-      to: "/tutors/messages", 
-      label: "Messages", 
-      icon: <MessageSquare className="h-4 w-4 mr-2" />,
-      role: "tutor"
-    },
-    { 
-      to: "/tutors/calendar", 
-      label: "Calendar", 
-      icon: <Calendar className="h-4 w-4 mr-2" />,
-      role: "tutor" 
-    },
-    { 
-      to: "/tutors/settings", 
-      label: "Settings", 
-      icon: <Settings className="h-4 w-4 mr-2" />,
-      role: "tutor"
-    },
-  ];
-
-  const getActionButtons = () => {
-    if (isAuthenticated) {
-      return null; // Authenticated users don't need these action buttons
-    }
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
     
-    return (
-      <>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/tutors")}
-          className="flex items-center relative group overflow-hidden"
-        >
-          <span className="absolute inset-0 w-0 bg-gradient-to-r from-accent/20 to-primary/20 transition-all duration-300 group-hover:w-full"></span>
-          <GraduationCap className="h-4 w-4 mr-2 relative z-10" />
-          <span className="relative z-10">For Tutors</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/students")}
-          className="flex items-center relative group overflow-hidden"
-        >
-          <span className="absolute inset-0 w-0 bg-gradient-to-r from-primary/20 to-accent/20 transition-all duration-300 group-hover:w-full"></span>
-          <Users className="h-4 w-4 mr-2 relative z-10" />
-          <span className="relative z-10">For Students</span>
-        </Button>
-      </>
-    );
-  };
-
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setIsMobileMenuOpen(false);
+  }, [location]);
+  
   return (
-    <header
-      id="navbar"
-      className={cn(
-        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm"
-      )}
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'py-3 bg-white/80 backdrop-blur-lg shadow-subtle' : 'py-5 bg-transparent'
+      }`}
     >
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-lg font-bold text-accent"
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="text-2xl font-display font-semibold text-secondary flex items-center"
           >
-            <GraduationCap className="h-6 w-6" />
-            <span className="bg-gradient-to-r from-accent to-blue-600 bg-clip-text text-transparent">
-              EdVix
-            </span>
+            <span className="bg-secondary text-white px-2 py-1 rounded mr-1 transform transition-transform hover:scale-105">Ed</span>
+            <span className="text-secondary transform transition-transform hover:scale-105">Vix</span>
           </Link>
-
-          <nav className="ml-10 hidden md:flex gap-6">
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
-                key={link.to}
-                to={link.to}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-accent flex items-center story-link",
-                  location.pathname === link.to
-                    ? "text-accent"
-                    : "text-muted-foreground"
-                )}
+                key={link.path}
+                to={link.path}
+                className={`relative text-sm font-medium transition-colors button-hover-animation ${
+                  location.pathname === link.path 
+                    ? 'text-secondary' 
+                    : 'text-secondary/70 hover:text-secondary'
+                }`}
               >
-                {link.icon}
-                {link.label}
+                {link.name}
               </Link>
             ))}
           </nav>
-        </div>
-
-        <div className="hidden md:flex items-center gap-4">
-          {getActionButtons()}
           
-          {isAuthenticated ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full overflow-hidden hover:bg-accent/10 transition-colors">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={currentUser?.avatar || ""} alt={currentUser?.name} />
-                          <AvatarFallback>{currentUser?.name?.charAt(0) || "U"}</AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
-                          <p className="text-xs leading-none text-muted-foreground">{currentUser?.email}</p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {accountLinks
-                        .filter(link => link.role === currentUser?.role)
-                        .map((link) => (
-                          <DropdownMenuItem key={link.to} onClick={() => navigate(link.to)}>
-                            {link.icon}
-                            {link.label}
-                          </DropdownMenuItem>
-                        ))}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Account</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : null}
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <AnimatedButton 
+              variant="outline" 
+              size="sm"
+            >
+              Log In
+            </AnimatedButton>
+            <AnimatedButton size="sm">
+              Sign Up
+            </AnimatedButton>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 rounded-md text-secondary"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <div className="w-6 h-5 flex flex-col justify-between">
+              <span 
+                className={`block h-0.5 bg-current transform transition-all duration-300 ${
+                  isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+                }`}
+              ></span>
+              <span 
+                className={`block h-0.5 bg-current transition-opacity duration-300 ${
+                  isMobileMenuOpen ? 'opacity-0' : ''
+                }`}
+              ></span>
+              <span 
+                className={`block h-0.5 bg-current transform transition-all duration-300 ${
+                  isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+                }`}
+              ></span>
+            </div>
+          </button>
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
+        
+        {/* Mobile Menu */}
+        <div 
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-out-expo ${
+            isMobileMenuOpen ? 'max-h-64 mt-4' : 'max-h-0 mt-0'
+          }`}
         >
-          {isMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </Button>
-      </div>
-
-      {isMenuOpen && (
-        <div className="md:hidden border-t">
-          <nav className="container py-4 grid gap-2">
+          <nav className="flex flex-col space-y-4 py-4">
             {navLinks.map((link) => (
               <Link
-                key={link.to}
-                to={link.to}
-                className={cn(
-                  "py-2 px-3 text-sm font-medium rounded-md transition-colors flex items-center",
-                  location.pathname === link.to
-                    ? "bg-muted text-accent"
-                    : "text-muted-foreground hover:bg-muted"
-                )}
+                key={link.path}
+                to={link.path}
+                className={`text-base font-medium px-1 py-2 ${
+                  location.pathname === link.path 
+                    ? 'text-secondary' 
+                    : 'text-secondary/70'
+                }`}
               >
-                {link.icon}
-                {link.label}
+                {link.name}
               </Link>
             ))}
-            
-            {!isAuthenticated && (
-              <div className="border-t my-2 pt-2">
-                <Link
-                  to="/tutors"
-                  className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
-                >
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  For Tutors
-                </Link>
-                <Link
-                  to="/students"
-                  className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  For Students
-                </Link>
-              </div>
-            )}
-            
-            <div className="border-t my-2 pt-2">
-              {isAuthenticated ? (
-                <>
-                  <div className="flex items-center gap-3 py-2 px-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={currentUser?.avatar || ""} alt={currentUser?.name} />
-                      <AvatarFallback>{currentUser?.name?.charAt(0) || "U"}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{currentUser?.name}</span>
-                      <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
-                    </div>
-                  </div>
-                  {accountLinks
-                    .filter(link => link.role === currentUser?.role)
-                    .map((link) => (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors hover:bg-muted"
-                      >
-                        {link.icon}
-                        {link.label}
-                      </Link>
-                    ))}
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full py-2 px-3 text-sm font-medium rounded-md transition-colors text-destructive hover:bg-destructive/10"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </button>
-                </>
-              ) : null}
+            <div className="flex flex-col space-y-3 pt-3">
+              <AnimatedButton 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-center"
+              >
+                Log In
+              </AnimatedButton>
+              <AnimatedButton 
+                size="sm" 
+                className="w-full justify-center"
+              >
+                Sign Up
+              </AnimatedButton>
             </div>
           </nav>
         </div>
-      )}
+      </div>
     </header>
   );
 };

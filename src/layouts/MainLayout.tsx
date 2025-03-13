@@ -1,18 +1,33 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 interface MainLayoutProps {
   children: ReactNode;
-  fullWidth?: boolean;
+  className?: string;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children, fullWidth = false }) => {
+const MainLayout = ({ children, className = "" }: MainLayoutProps) => {
+  useEffect(() => {
+    // Smooth scroll to top on page load
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+    
+    // Add animation class to body on mount
+    document.body.classList.add('animate-fade-in');
+    
+    return () => {
+      document.body.classList.remove('animate-fade-in');
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/95">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className={`flex-grow ${fullWidth ? '' : 'container mx-auto px-4 py-6 md:py-12'}`}>
+      <main className={`flex-grow ${className}`}>
         {children}
       </main>
       <Footer />

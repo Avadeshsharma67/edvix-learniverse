@@ -58,7 +58,7 @@ const Footer = () => {
               <span className="text-secondary">Vix</span>
             </Link>
             <p className="text-sm text-secondary/70 mb-4 max-w-xs">
-              AI-powered educational platform connecting students with tutors for personalized learning experiences.
+              AI-powered educational platform connecting students with tutors from across India for personalized learning experiences.
             </p>
             <div className="flex space-x-4">
               {/* Social icons */}
@@ -111,8 +111,8 @@ const Footer = () => {
               className="text-sm bg-transparent border border-gray-200 rounded-md py-1 px-2 text-secondary/70 focus:outline-none focus:ring-1 focus:ring-secondary"
             >
               <option value="en">English</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
+              <option value="hi">हिंदी</option>
+              <option value="ta">தமிழ்</option>
             </select>
           </div>
         </div>

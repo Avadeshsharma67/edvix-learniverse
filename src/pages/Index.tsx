@@ -1,3 +1,4 @@
+
 import MainLayout from '@/layouts/MainLayout';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
@@ -119,7 +120,11 @@ const Index = () => {
           </div>
           
           <div className="mt-14 text-center">
-            <AnimatedButton size="lg">
+            <AnimatedButton 
+              size="lg"
+              to="/marketplace"
+              asLink
+            >
               Explore All Courses
             </AnimatedButton>
           </div>
@@ -303,7 +308,11 @@ const Index = () => {
               </div>
               
               <div className="mt-8">
-                <AnimatedButton size="lg">
+                <AnimatedButton 
+                  size="lg"
+                  to="/signup"
+                  asLink
+                >
                   Get Started Today
                 </AnimatedButton>
               </div>
@@ -326,6 +335,8 @@ const Index = () => {
             <AnimatedButton 
               className="bg-white text-secondary hover:bg-white/90"
               size="lg"
+              to="/signup"
+              asLink
             >
               Start Your Journey
             </AnimatedButton>

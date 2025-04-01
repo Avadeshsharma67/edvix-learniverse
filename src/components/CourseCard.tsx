@@ -109,7 +109,7 @@ const CourseCard = ({
           <img
             src={image}
             alt={title}
-            className={`w-full h-full object-cover transition-all duration-700 ${isLoaded ? 'blur-0 scale-100' : 'blur-md scale-110'}`}
+            className={`w-full h-full object-cover transition-all duration-700 ${isLoaded ? 'blur-0 scale-100' : 'blur-sm scale-110'}`}
           />
           
           {/* Revamped badge */}

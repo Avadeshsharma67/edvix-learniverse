@@ -68,10 +68,16 @@ const Navbar = () => {
             <AnimatedButton 
               variant="outline" 
               size="sm"
+              to="/login"
+              asLink
             >
               Log In
             </AnimatedButton>
-            <AnimatedButton size="sm">
+            <AnimatedButton 
+              size="sm"
+              to="/signup"
+              asLink
+            >
               Sign Up
             </AnimatedButton>
           </div>
@@ -127,12 +133,16 @@ const Navbar = () => {
                 variant="outline" 
                 size="sm" 
                 className="w-full justify-center"
+                to="/login"
+                asLink
               >
                 Log In
               </AnimatedButton>
               <AnimatedButton 
                 size="sm" 
                 className="w-full justify-center"
+                to="/signup"
+                asLink
               >
                 Sign Up
               </AnimatedButton>

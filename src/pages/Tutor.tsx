@@ -84,7 +84,7 @@ const Tutor = () => {
       rating: 4.8,
       reviewsCount: 124,
       hourlyRate: 1200,
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=400&auto=format&fit=crop',
       availability: 'Flexible',
       languages: ['English', 'Hindi', 'Gujarati'],
       description: 'Full-stack developer with expertise in React, Node.js, and modern web technologies. I focus on practical, project-based learning to help students build real-world applications.',

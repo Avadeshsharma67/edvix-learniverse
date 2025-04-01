@@ -2,6 +2,8 @@
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import AnimatedTitle from '@/components/AnimatedTitle';
+import { Link } from 'react-router-dom';
+import { Linkedin, Github, Mail } from 'lucide-react';
 
 const About = () => {
   return (
@@ -33,8 +35,8 @@ const About = () => {
             <div className="relative">
               <div className="aspect-video rounded-xl overflow-hidden shadow-elevation">
                 <img 
-                  src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1170&auto=format&fit=crop" 
-                  alt="EdVix team" 
+                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1170&auto=format&fit=crop" 
+                  alt="Indian students learning" 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -80,9 +82,15 @@ const About = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 {
-                  name: "Arjun Patel",
+                  name: "Avadesh Sharma",
                   role: "Founder & CEO",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop"
+                  caption: "Tutor and Tech Enthusiast",
+                  image: "https://avadesh.vercel.app/avatar.jpg",
+                  links: {
+                    linkedin: "https://www.linkedin.com/in/avadeshseo/",
+                    github: "https://github.com/avadesh02",
+                    email: "mailto:avadeshpersonal02@gmail.com"
+                  }
                 },
                 {
                   name: "Priya Sharma",
@@ -92,12 +100,12 @@ const About = () => {
                 {
                   name: "Vikram Mehta",
                   role: "CTO",
-                  image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop"
+                  image: "https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=400&auto=format&fit=crop"
                 },
                 {
                   name: "Anjali Desai",
                   role: "Head of Tutor Success",
-                  image: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=400&auto=format&fit=crop"
+                  image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400&auto=format&fit=crop"
                 }
               ].map((member, index) => (
                 <div key={index} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
@@ -111,6 +119,29 @@ const About = () => {
                   <div className="p-4 text-center">
                     <h3 className="font-medium text-secondary">{member.name}</h3>
                     <p className="text-sm text-secondary/70">{member.role}</p>
+                    {member.caption && (
+                      <p className="text-xs text-secondary/60 mt-1">{member.caption}</p>
+                    )}
+                    
+                    {member.links && (
+                      <div className="flex justify-center space-x-3 mt-3">
+                        {member.links.linkedin && (
+                          <a href={member.links.linkedin} target="_blank" rel="noopener noreferrer" className="text-secondary/70 hover:text-primary transition-colors">
+                            <Linkedin className="h-4 w-4" />
+                          </a>
+                        )}
+                        {member.links.github && (
+                          <a href={member.links.github} target="_blank" rel="noopener noreferrer" className="text-secondary/70 hover:text-primary transition-colors">
+                            <Github className="h-4 w-4" />
+                          </a>
+                        )}
+                        {member.links.email && (
+                          <a href={member.links.email} className="text-secondary/70 hover:text-primary transition-colors">
+                            <Mail className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

@@ -11,6 +11,8 @@ import Tutors from "./pages/Tutors";
 import About from "./pages/About";
 import Course from "./pages/Course";
 import Tutor from "./pages/Tutor";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -35,6 +37,8 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/course/:id" element={<Course />} />
           <Route path="/tutor/:id" element={<Tutor />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           
           {/* This route ensures that exact "/" matches redirect to the index page */}
           <Route path="" element={<Navigate to="/" replace />} />

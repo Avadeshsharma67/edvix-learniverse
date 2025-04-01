@@ -19,8 +19,12 @@ const MainLayout = ({ children, className = "" }: MainLayoutProps) => {
     // Add animation class to body on mount
     document.body.classList.add('animate-fade-in');
     
+    // Enable smooth scrolling for the entire page
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
     return () => {
       document.body.classList.remove('animate-fade-in');
+      document.documentElement.style.scrollBehavior = '';
     };
   }, []);
 

@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -135,10 +134,12 @@
 
 .lazy-image {
   @apply blur-xs transition-all duration-700 ease-out;
+  filter: blur(2px); /* Fallback for browsers that don't support the custom blur value */
 }
 
 .lazy-image.loaded {
   @apply blur-0;
+  filter: blur(0); /* Fallback for browsers that don't support the custom blur value */
 }
 
 /* Custom animations for page transitions */

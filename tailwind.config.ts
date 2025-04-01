@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -79,6 +80,9 @@ export default {
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 			},
 			backdropBlur: {
+				xs: '2px',
+			},
+			blur: {
 				xs: '2px',
 			},
 			keyframes: {

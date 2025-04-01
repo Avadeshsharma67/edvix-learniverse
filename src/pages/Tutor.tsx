@@ -40,7 +40,7 @@ const Tutor = () => {
       availability: 'Weekdays, Evening',
       languages: ['English', 'Hindi', 'Marathi'],
       description: 'Ph.D. in Computer Science with specialization in AI and Machine Learning. I offer personalized guidance to help students master complex ML concepts and implementations.',
-      fullBio: 'With over 8 years of experience in both academia and industry, I specialize in making complex machine learning concepts accessible to students of all levels. I completed my Ph.D. from IIT Bombay with a focus on neural networks and deep learning applications. I've worked as a research scientist at major tech companies and have published several papers in top AI conferences. My teaching philosophy emphasizes practical implementation alongside theoretical understanding, ensuring students can apply what they learn to real-world problems.',
+      fullBio: 'With over 8 years of experience in both academia and industry, I specialize in making complex machine learning concepts accessible to students of all levels. I completed my Ph.D. from IIT Bombay with a focus on neural networks and deep learning applications. I\'ve worked as a research scientist at major tech companies and have published several papers in top AI conferences. My teaching philosophy emphasizes practical implementation alongside theoretical understanding, ensuring students can apply what they learn to real-world problems.',
       education: [
         { degree: 'Ph.D. in Computer Science', institution: 'IIT Bombay', year: '2015' },
         { degree: 'M.Tech in Computer Science', institution: 'IIT Delhi', year: '2012' },
@@ -88,7 +88,7 @@ const Tutor = () => {
       availability: 'Flexible',
       languages: ['English', 'Hindi', 'Gujarati'],
       description: 'Full-stack developer with expertise in React, Node.js, and modern web technologies. I focus on practical, project-based learning to help students build real-world applications.',
-      fullBio: 'I'm a passionate full-stack developer with 6+ years of industry experience working with startups and established tech companies. My expertise spans the entire web development stack with particular focus on React, Node.js, and modern JavaScript frameworks. I believe in learning by doing, and my teaching approach emphasizes building practical projects that solve real problems. I've helped over 100 students transition into web development careers through personalized mentoring and hands-on guidance.',
+      fullBio: 'I\'m a passionate full-stack developer with 6+ years of industry experience working with startups and established tech companies. My expertise spans the entire web development stack with particular focus on React, Node.js, and modern JavaScript frameworks. I believe in learning by doing, and my teaching approach emphasizes building practical projects that solve real problems. I\'ve helped over 100 students transition into web development careers through personalized mentoring and hands-on guidance.',
       education: [
         { degree: 'B.Tech in Information Technology', institution: 'IIIT Allahabad', year: '2017' },
         { degree: 'Full-Stack Development Bootcamp', institution: 'Coding Ninjas', year: '2018' }
@@ -106,19 +106,19 @@ const Tutor = () => {
         {
           name: 'Preeti Joshi',
           rating: 5,
-          comment: 'Vikram's project-based teaching approach is exactly what I needed. Within three months, I built a complete portfolio of web applications that helped me land my first developer job.',
+          comment: 'Vikram\'s project-based teaching approach is exactly what I needed. Within three months, I built a complete portfolio of web applications that helped me land my first developer job.',
           date: '10 June 2023'
         },
         {
           name: 'Karan Singh',
           rating: 4.7,
-          comment: 'Excellent mentor who provides practical insights beyond what you'll find in typical online courses. His feedback on my code greatly improved my development practices.',
+          comment: 'Excellent mentor who provides practical insights beyond what you\'ll find in typical online courses. His feedback on my code greatly improved my development practices.',
           date: '5 May 2023'
         },
         {
           name: 'Ananya Patel',
           rating: 4.8,
-          comment: 'I was trying to pivot my career to web development and Vikram's guidance was invaluable. He tailored the sessions to my learning pace and focused on practical skills that employers actually look for.',
+          comment: 'I was trying to pivot my career to web development and Vikram\'s guidance was invaluable. He tailored the sessions to my learning pace and focused on practical skills that employers actually look for.',
           date: '12 April 2023'
         }
       ]

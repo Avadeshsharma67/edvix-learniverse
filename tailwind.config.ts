@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -79,6 +78,9 @@ export default {
 				'card': '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.02)',
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 			},
+			backdropBlur: {
+				xs: '2px',
+			},
 			keyframes: {
 				'accordion-down': {
 					from: { height: '0' },
@@ -146,9 +148,6 @@ export default {
 			transitionTimingFunction: {
 				'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
 				'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
-			},
-			backdropBlur: {
-				xs: '2px',
 			},
 		}
 	},

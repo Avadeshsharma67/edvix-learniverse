@@ -1,4 +1,3 @@
-
 import MainLayout from '@/layouts/MainLayout';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
@@ -34,12 +33,12 @@ const Index = () => {
     {
       id: '1',
       title: 'Machine Learning Fundamentals',
-      instructor: 'Dr. Sarah Johnson',
+      instructor: 'Dr. Priya Sharma',
       description: 'Learn the core concepts of machine learning, from algorithms to implementation.',
       image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop',
       category: 'AI & ML',
-      price: 89.99,
-      originalPrice: 129.99,
+      price: 6999,
+      originalPrice: 9999,
       rating: 4.8,
       studentsCount: 1245,
       isRevamped: false,
@@ -47,12 +46,12 @@ const Index = () => {
     {
       id: '2',
       title: 'Full-Stack Web Development Bootcamp',
-      instructor: 'Michael Thompson',
+      instructor: 'Vikram Mehta',
       description: 'Comprehensive guide to modern web development, from frontend to backend.',
       image: 'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=800&auto=format&fit=crop',
       category: 'Web Dev',
-      price: 94.99,
-      originalPrice: 149.99,
+      price: 7499,
+      originalPrice: 11999,
       rating: 4.9,
       studentsCount: 3578,
       isRevamped: false,
@@ -60,12 +59,12 @@ const Index = () => {
     {
       id: '3',
       title: 'UX/UI Design Masterclass',
-      instructor: 'Emma Roberts',
+      instructor: 'Anjali Desai',
       description: 'Master the principles of user experience and interface design with practical projects.',
       image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop',
       category: 'Design',
-      price: 65.99,
-      originalPrice: 99.99,
+      price: 5499,
+      originalPrice: 8999,
       rating: 4.7,
       studentsCount: 2156,
       isRevamped: true,
@@ -73,12 +72,12 @@ const Index = () => {
     {
       id: '4',
       title: 'Data Science with Python',
-      instructor: 'Alex Chen',
+      instructor: 'Arjun Patel',
       description: 'From data analysis to visualization, master Python for data science.',
       image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop',
       category: 'Data Science',
-      price: 79.99,
-      originalPrice: 119.99,
+      price: 6499,
+      originalPrice: 9999,
       rating: 4.6,
       studentsCount: 1875,
       isRevamped: false,

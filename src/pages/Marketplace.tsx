@@ -25,7 +25,7 @@ const Marketplace = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000]);
   const [showRevamped, setShowRevamped] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('popularity');
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
@@ -51,12 +51,12 @@ const Marketplace = () => {
     {
       id: '1',
       title: 'Machine Learning Fundamentals',
-      instructor: 'Dr. Sarah Johnson',
+      instructor: 'Dr. Priya Sharma',
       description: 'Learn the core concepts of machine learning, from algorithms to implementation.',
       image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop',
       category: 'AI & ML',
-      price: 89.99,
-      originalPrice: 129.99,
+      price: 6999,
+      originalPrice: 9999,
       rating: 4.8,
       studentsCount: 1245,
       isRevamped: false,
@@ -66,12 +66,12 @@ const Marketplace = () => {
     {
       id: '2',
       title: 'Full-Stack Web Development Bootcamp',
-      instructor: 'Michael Thompson',
+      instructor: 'Vikram Mehta',
       description: 'Comprehensive guide to modern web development, from frontend to backend.',
       image: 'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=800&auto=format&fit=crop',
       category: 'Development',
-      price: 94.99,
-      originalPrice: 149.99,
+      price: 7499,
+      originalPrice: 11999,
       rating: 4.9,
       studentsCount: 3578,
       isRevamped: false,
@@ -81,12 +81,12 @@ const Marketplace = () => {
     {
       id: '3',
       title: 'UX/UI Design Masterclass',
-      instructor: 'Emma Roberts',
+      instructor: 'Anjali Desai',
       description: 'Master the principles of user experience and interface design with practical projects.',
       image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop',
       category: 'Design',
-      price: 65.99,
-      originalPrice: 99.99,
+      price: 5499,
+      originalPrice: 8999,
       rating: 4.7,
       studentsCount: 2156,
       isRevamped: true,
@@ -96,12 +96,12 @@ const Marketplace = () => {
     {
       id: '4',
       title: 'Data Science with Python',
-      instructor: 'Alex Chen',
+      instructor: 'Arjun Patel',
       description: 'From data analysis to visualization, master Python for data science.',
       image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop',
       category: 'Data Science',
-      price: 79.99,
-      originalPrice: 119.99,
+      price: 6499,
+      originalPrice: 9999,
       rating: 4.6,
       studentsCount: 1875,
       isRevamped: false,
@@ -111,12 +111,12 @@ const Marketplace = () => {
     {
       id: '5',
       title: 'Digital Marketing Strategy',
-      instructor: 'Jessica Wong',
+      instructor: 'Neha Verma',
       description: 'Learn to create effective digital marketing campaigns across multiple platforms.',
       image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=800&auto=format&fit=crop',
       category: 'Marketing',
-      price: 69.99,
-      originalPrice: 109.99,
+      price: 5999,
+      originalPrice: 8999,
       rating: 4.5,
       studentsCount: 2345,
       isRevamped: false,
@@ -126,12 +126,12 @@ const Marketplace = () => {
     {
       id: '6',
       title: 'Advanced JavaScript Patterns',
-      instructor: 'David Wilson',
+      instructor: 'Raj Malhotra',
       description: 'Deep dive into advanced JavaScript concepts, design patterns, and best practices.',
       image: 'https://images.unsplash.com/photo-1515378960530-7c0da6231fb1?q=80&w=800&auto=format&fit=crop',
       category: 'Development',
-      price: 85.99,
-      originalPrice: 129.99,
+      price: 6999,
+      originalPrice: 9999,
       rating: 4.9,
       studentsCount: 1678,
       isRevamped: true,
@@ -141,12 +141,12 @@ const Marketplace = () => {
     {
       id: '7',
       title: 'Business Financial Analysis',
-      instructor: 'Robert Johnson',
+      instructor: 'Rahul Gupta',
       description: 'Learn to analyze financial statements and make data-driven business decisions.',
       image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800&auto=format&fit=crop',
       category: 'Business',
-      price: 79.99,
-      originalPrice: 119.99,
+      price: 6499,
+      originalPrice: 9999,
       rating: 4.7,
       studentsCount: 1489,
       isRevamped: false,
@@ -155,13 +155,13 @@ const Marketplace = () => {
     },
     {
       id: '8',
-      title: 'Spanish for Beginners',
-      instructor: 'Maria Rodriguez',
-      description: 'Learn Spanish from scratch with a focus on conversation and practical usage.',
+      title: 'Hindi for Beginners',
+      instructor: 'Meera Iyer',
+      description: 'Learn Hindi from scratch with a focus on conversation and practical usage.',
       image: 'https://images.unsplash.com/photo-1535302717252-32212bad2d78?q=80&w=800&auto=format&fit=crop',
       category: 'Language',
-      price: 49.99,
-      originalPrice: 79.99,
+      price: 3999,
+      originalPrice: 6999,
       rating: 4.8,
       studentsCount: 3789,
       isRevamped: true,
@@ -251,7 +251,7 @@ const Marketplace = () => {
               Course Marketplace
             </AnimatedTitle>
             <p className="text-lg text-secondary/70 mb-8 max-w-xl mx-auto">
-              Discover thousands of courses from expert instructors around the world,
+              Discover thousands of courses from expert tutors around the world,
               including revamped courses at special prices.
             </p>
             
@@ -259,7 +259,7 @@ const Marketplace = () => {
             <div className="relative max-w-xl mx-auto">
               <input
                 type="text"
-                placeholder="Search for courses, topics, or instructors..."
+                placeholder="Search for courses, topics, or tutors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full py-3 pl-10 pr-4 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20"
@@ -334,15 +334,15 @@ const Marketplace = () => {
                   <input
                     type="range"
                     min="0"
-                    max="200"
-                    step="5"
+                    max="15000"
+                    step="500"
                     value={priceRange[1]}
                     onChange={handlePriceChange}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                   <div className="flex justify-between">
-                    <span className="text-secondary/70">$0</span>
-                    <span className="text-secondary font-medium">${priceRange[1]}</span>
+                    <span className="text-secondary/70">₹0</span>
+                    <span className="text-secondary font-medium">₹{priceRange[1].toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
@@ -446,7 +446,7 @@ const Marketplace = () => {
                     setActiveCategory('All');
                     setSearchTerm('');
                     setSelectedLevel('All');
-                    setPriceRange([0, 200]);
+                    setPriceRange([0, 15000]);
                     setShowRevamped(false);
                   }}>
                     Reset Filters
@@ -489,10 +489,10 @@ const Marketplace = () => {
               Want to sell your own courses?
             </h2>
             <p className="text-lg text-secondary/70 mb-8">
-              Join our instructor community and share your knowledge with students around the world.
+              Join our tutor community and share your knowledge with students around the world.
             </p>
             <AnimatedButton size="lg">
-              Become an Instructor
+              Become a Tutor
             </AnimatedButton>
           </div>
         </div>

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,34 +28,38 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner position="top-right" closeButton={true} richColors={true} />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/tutors" element={<Tutors />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/course/:id" element={<Course />} />
-          <Route path="/tutor/:id" element={<Tutor />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/tutor" element={<TutorDashboard />} />
-          <Route path="/dashboard/student" element={<StudentDashboard />} />
-          
-          {/* This route ensures that exact "/" matches redirect to the index page */}
-          <Route path="" element={<Navigate to="/" replace />} />
-          
-          {/* Catch-all route for 404 pages */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner position="top-right" closeButton={true} richColors={true} />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/tutors" element={<Tutors />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/course/:id" element={<Course />} />
+              <Route path="/tutor/:id" element={<Tutor />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/tutor" element={<TutorDashboard />} />
+              <Route path="/dashboard/student" element={<StudentDashboard />} />
+              
+              {/* This route ensures that exact "/" matches redirect to the index page */}
+              <Route path="" element={<Navigate to="/" replace />} />
+              
+              {/* Catch-all route for 404 pages */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;

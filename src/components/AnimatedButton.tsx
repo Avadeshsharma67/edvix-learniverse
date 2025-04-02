@@ -105,11 +105,11 @@ const AnimatedButton = ({
     </>
   );
   
-  // Render as Link if to prop is provided
-  if (asLink || to) {
+  // Render as Link if to prop is provided or asLink is true
+  if (asLink && to) {
     return (
       <Link
-        to={to || "#"}
+        to={to}
         className={buttonClasses}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

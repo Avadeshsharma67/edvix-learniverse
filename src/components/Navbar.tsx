@@ -32,7 +32,7 @@ const Navbar = () => {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'py-3 bg-white/80 backdrop-blur-lg shadow-subtle' : 'py-5 bg-transparent'
+        isScrolled || isMobileMenuOpen ? 'py-3 bg-white shadow-subtle' : 'py-5 bg-white/80 backdrop-blur-lg'
       }`}
     >
       <div className="container mx-auto px-4 md:px-6">
@@ -113,24 +113,24 @@ const Navbar = () => {
         {/* Mobile Menu */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-300 ease-out-expo ${
-            isMobileMenuOpen ? 'max-h-64 mt-4' : 'max-h-0 mt-0'
+            isMobileMenuOpen ? 'max-h-64 mt-4 opacity-100' : 'max-h-0 mt-0 opacity-0 pointer-events-none'
           }`}
         >
-          <nav className="flex flex-col space-y-4 py-4">
+          <nav className="flex flex-col space-y-4 py-4 bg-white rounded-lg shadow-subtle my-2">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-base font-medium px-1 py-2 ${
+                className={`text-base font-medium px-4 py-2 ${
                   location.pathname === link.path 
-                    ? 'text-secondary' 
-                    : 'text-secondary/70'
+                    ? 'text-secondary bg-slate-50' 
+                    : 'text-secondary/70 hover:bg-slate-50'
                 }`}
               >
                 {link.name}
               </Link>
             ))}
-            <div className="flex flex-col space-y-3 pt-3">
+            <div className="flex flex-col space-y-3 pt-3 px-4 border-t border-slate-100">
               <AnimatedButton 
                 variant="outline" 
                 size="sm" 

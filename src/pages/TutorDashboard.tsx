@@ -343,7 +343,7 @@ const TutorDashboard = () => {
                       {[
                         { name: 'Amit S.', rating: 5, comment: 'Excellent explanation of complex topics.' },
                         { name: 'Priya P.', rating: 4, comment: 'Very helpful course content and exercises.' },
-                        { name: 'Rahul S.', rating: 5, comment: 'The best instructor I've had so far!' }
+                        { name: 'Rahul S.', rating: 5, comment: "The best instructor I've had so far!" }
                       ].map((review, i) => (
                         <div key={i} className="pb-3 border-b last:border-0">
                           <div className="flex items-center justify-between">

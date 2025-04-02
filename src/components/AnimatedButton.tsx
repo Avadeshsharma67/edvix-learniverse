@@ -26,14 +26,14 @@ const AnimatedButton = ({
 }: AnimatedButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
   
-  const baseStyles = "relative rounded-lg font-medium transition-all duration-300 ease-out flex items-center justify-center";
+  const baseStyles = "relative rounded-lg font-medium transition-all duration-300 ease-out flex items-center justify-center overflow-hidden";
   
   const variantStyles = {
-    primary: "bg-accent text-white hover:bg-accent/90 shadow-[0_0_10px_rgba(56,_189,_248,_0.2)]",
-    secondary: "bg-secondary text-white hover:bg-secondary/90",
-    outline: "bg-transparent border border-secondary/30 text-secondary hover:bg-secondary/5",
-    ghost: "bg-transparent text-secondary hover:bg-secondary/5",
-    accent: "bg-gradient-to-r from-accent to-blue-700 text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,_189,_248,_0.3)]"
+    primary: "bg-accent text-white hover:bg-accent/90 shadow-[0_0_10px_rgba(56,_189,_248,_0.2)] before:bg-white/10",
+    secondary: "bg-secondary text-white hover:bg-secondary/90 before:bg-white/10",
+    outline: "bg-transparent border border-secondary/30 text-secondary hover:bg-secondary/5 before:bg-secondary/5",
+    ghost: "bg-transparent text-secondary hover:bg-secondary/5 before:bg-secondary/5",
+    accent: "bg-gradient-to-r from-accent to-blue-700 text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,_189,_248,_0.3)] before:bg-white/10"
   };
   
   const sizeStyles = {
@@ -71,6 +71,7 @@ const AnimatedButton = ({
         'shadow-[0_0_15px_rgba(56,_189,_248,_0.4)] translate-y-[-2px]' : 
         'shadow-sm translate-y-[-2px]' 
       : 'shadow-none',
+    "before:absolute before:content-[''] before:top-0 before:left-[-100%] before:w-full before:h-full before:skew-x-[45deg] before:transition-all before:duration-500 hover:before:left-[100%]",
     className
   );
   
@@ -90,6 +91,7 @@ const AnimatedButton = ({
             transform: scale(0);
             animation: ripple 600ms linear;
             background-color: rgba(255, 255, 255, 0.7);
+            z-index: 5;
           }
           
           @keyframes ripple {

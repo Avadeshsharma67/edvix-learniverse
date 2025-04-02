@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -119,6 +120,16 @@
   
   .input-highlight {
     @apply focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all;
+  }
+
+  /* 3D Button Effect */
+  .btn-3d {
+    @apply relative bg-gradient-to-r from-accent/90 to-blue-600/90 text-white rounded-lg px-6 py-3
+           transform transition-transform duration-200 active:translate-y-[2px]
+           before:absolute before:inset-0 before:rounded-lg before:opacity-0
+           before:transition-opacity hover:before:opacity-100
+           before:bg-gradient-to-r before:from-accent before:to-blue-600
+           shadow-[0_4px_0_0_rgba(30,64,175,0.6)] active:shadow-none;
   }
 }
 
@@ -247,8 +258,121 @@
   opacity: 1;
 }
 
+/* 3D card effect */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.card-3d:hover {
+  transform: translateY(-5px) rotate3d(0.5, 1, 0, 10deg);
+}
+
+.card-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.card-3d:hover::before {
+  opacity: 1;
+}
+
+/* Frosted glass effect */
+.frosted-glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
 @keyframes glowing {
   0% { background-position: 0 0; }
   50% { background-position: 400% 0; }
   100% { background-position: 0 0; }
+}
+
+/* Float animation for 3D elements */
+@keyframes floating {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes floating-reverse {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(-2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.float-animation {
+  animation: floating 4s ease-in-out infinite;
+}
+
+.float-animation-reverse {
+  animation: floating-reverse 5s ease-in-out infinite;
+}
+
+/* Animated border glow */
+.border-glow {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: linear-gradient(120deg, #0ea5e9, #6366f1, #8b5cf6, #0ea5e9);
+  background-size: 400% 400%;
+  animation: border-glow-animation 6s linear infinite;
+}
+
+@keyframes border-glow-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Shimmer effect */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }

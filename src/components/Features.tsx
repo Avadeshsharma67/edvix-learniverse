@@ -1,20 +1,28 @@
 
-import AnimatedTitle from './AnimatedTitle';
 import { useRef, useEffect, useState } from 'react';
+import AnimatedTitle from './AnimatedTitle';
+import { Lightbulb, Users, MessageSquare, MonitorPlay, BookOpen, Trophy } from 'lucide-react';
+import AnimatedButton from './AnimatedButton';
+import { Link } from 'react-router-dom';
+
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  index: number;
+  color: string;
+}
 
 const FeatureCard = ({ 
   icon, 
   title, 
   description, 
-  index 
-}: { 
-  icon: string; 
-  title: string; 
-  description: string; 
-  index: number; 
-}) => {
+  index,
+  color
+}: FeatureCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -39,14 +47,21 @@ const FeatureCard = ({
   return (
     <div 
       ref={cardRef}
-      className={`relative p-6 bg-white rounded-xl shadow-subtle border border-gray-100 transition-all duration-500 transform 
-                 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      className={`relative p-6 rounded-xl transition-all duration-700 transform glass-card
+                 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}
+                 ${isHovered ? 'shadow-elevation scale-[1.03]' : 'shadow-subtle'}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="w-12 h-12 bg-secondary/5 rounded-md flex items-center justify-center mb-4">
-        <div className="text-2xl text-secondary" dangerouslySetInnerHTML={{ __html: icon }}></div>
+      <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 ${isHovered ? 'scale-110' : ''} transition-all duration-300`} style={{ backgroundColor: `${color}20` }}>
+        <div className="text-2xl" style={{ color }}>{icon}</div>
       </div>
-      <h3 className="text-lg font-display font-semibold mb-2 text-secondary">{title}</h3>
-      <p className="text-secondary/70 text-sm">{description}</p>
+      <h3 className="text-xl font-display font-semibold mb-3 text-secondary">{title}</h3>
+      <p className="text-secondary/70">{description}</p>
+      
+      {isHovered && (
+        <div className="absolute -bottom-1 -right-1 w-24 h-24 bg-gradient-to-br from-transparent to-white/10 rounded-br-xl -z-10 opacity-70"></div>
+      )}
     </div>
   );
 };
@@ -54,41 +69,51 @@ const FeatureCard = ({
 const Features = () => {
   const features = [
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+      icon: <Lightbulb size={28} />,
       title: 'Personalized Learning',
       description: 'AI-powered learning paths tailored to your goals, pace, and preferences.',
+      color: '#FF6D00'
     },
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>',
+      icon: <Users size={28} />,
       title: 'Expert Tutors',
       description: 'Connect with verified tutors for 1:1 sessions and get personalized guidance.',
+      color: '#2196F3'
     },
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+      icon: <MessageSquare size={28} />,
       title: 'Real-Time Chat',
       description: 'Instant messaging with tutors and peers for collaboration and support.',
+      color: '#4CAF50'
     },
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
+      icon: <MonitorPlay size={28} />,
       title: 'Live Sessions',
       description: 'Interactive live classes with real-time feedback and engaging content.',
+      color: '#9C27B0'
     },
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>',
+      icon: <BookOpen size={28} />,
       title: 'Engaging Content',
       description: 'Interactive lessons with quizzes, challenges, and multimedia content.',
+      color: '#F44336'
     },
     {
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>',
+      icon: <Trophy size={28} />,
       title: 'Gamified Learning',
       description: 'Earn badges, points and track progress while learning with fun challenges.',
+      color: '#FFC107'
     },
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto text-center mb-14">
+    <section className="py-24 bg-gradient-to-b from-white to-blue-50/30 relative overflow-hidden">
+      {/* 3D Background Elements */}
+      <div className="absolute top-20 -left-24 w-48 h-48 rounded-full bg-purple-100/50 blur-3xl"></div>
+      <div className="absolute bottom-20 -right-24 w-64 h-64 rounded-full bg-blue-100/50 blur-3xl"></div>
+      
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        <div className="max-w-3xl mx-auto text-center mb-16">
           <div className="inline-block bg-secondary/5 backdrop-blur-sm px-4 py-1.5 rounded-full mb-4">
             <span className="text-sm font-medium text-secondary/80">Why Choose EdVix</span>
           </div>
@@ -97,13 +122,19 @@ const Features = () => {
             element="h2" 
             className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-6 text-secondary"
           >
-            Features that Transform Learning
+            Features that <span className="text-gradient">Transform Learning</span>
           </AnimatedTitle>
           
-          <p className="text-lg text-secondary/70 max-w-2xl mx-auto">
+          <p className="text-lg text-secondary/70 max-w-2xl mx-auto mb-8">
             Our platform combines AI-powered personalization with human expertise to create
             a learning experience that adapts to your unique needs.
           </p>
+          
+          <Link to="/marketplace">
+            <AnimatedButton variant="accent" withArrow={true}>
+              Explore Courses
+            </AnimatedButton>
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -114,6 +145,7 @@ const Features = () => {
               title={feature.title}
               description={feature.description}
               index={index}
+              color={feature.color}
             />
           ))}
         </div>

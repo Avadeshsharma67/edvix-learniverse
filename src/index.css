@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -38,7 +39,7 @@
   }
 
   * {
-    @apply border-border selection:bg-black/5;
+    @apply border-border selection:bg-accent/10 selection:text-accent;
   }
 
   html {
@@ -88,13 +89,33 @@
   }
   
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-secondary to-secondary/80;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-accent to-blue-700;
   }
 
   .animated-border-card {
     @apply relative before:absolute before:w-full before:h-full before:rounded-lg before:z-[-1] 
            before:bg-gradient-to-r before:from-[#e4e4e7]/50 before:to-[#a1a1aa]/50 before:blur-sm 
            before:transition-all before:duration-1000 before:animate-pulse-subtle;
+  }
+  
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent/90 transition-colors rounded-lg px-5 py-2.5;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary/90 transition-colors rounded-lg px-5 py-2.5;
+  }
+  
+  .btn-outline {
+    @apply border border-secondary/20 text-secondary hover:bg-secondary/5 transition-colors rounded-lg px-5 py-2.5;
+  }
+  
+  .card-highlight {
+    @apply relative after:absolute after:inset-0 after:rounded-lg after:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] after:pointer-events-none;
+  }
+  
+  .input-highlight {
+    @apply focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all;
   }
 }
 
@@ -157,4 +178,43 @@
 
 .page-exit-active {
   @apply opacity-0 transition-opacity duration-300;
+}
+
+/* Futuristic UI Elements */
+.glow-border {
+  @apply relative border border-transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+              linear-gradient(to right, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5)) border-box;
+}
+
+.glow-card {
+  @apply relative bg-white rounded-xl overflow-hidden;
+  box-shadow: 0 4px 20px -2px rgba(56, 189, 248, 0.12);
+}
+
+.glow-card::after {
+  @apply absolute inset-0 rounded-xl pointer-events-none;
+  content: "";
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(56, 189, 248, 0.12) 50%,
+    transparent 60%
+  ) center / 300% 300%;
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% 200%;
+  }
+  100% {
+    background-position: -200% -200%;
+  }
+}
+
+/* Grid background */
+.grid-background {
+  background-size: 40px 40px;
+  background-image: radial-gradient(circle, #6366f1 1px, rgba(0, 0, 0, 0) 1px);
 }

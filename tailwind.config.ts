@@ -75,9 +75,11 @@ export default {
 			},
 			boxShadow: {
 				'subtle': '0 2px 10px rgba(0, 0, 0, 0.03)',
-				'elevation': '0 10px 30px rgba(0, 0, 0, 0.04)',
+				'elevation': '0 10px 30px rgba(0, 0, 0, 0.04), 0 0 8px rgba(0, 0, 0, 0.01)',
 				'card': '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.02)',
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
+				'glow': '0 0 15px rgba(56, 189, 248, 0.3)',
+				'glow-accent': '0 0 15px rgba(30, 64, 175, 0.2)',
 			},
 			backdropBlur: {
 				xs: '2px',
@@ -129,6 +131,10 @@ export default {
 				'pulse-subtle': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.85' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
 				}
 			},
 			animation: {
@@ -144,10 +150,12 @@ export default {
 				'rotate': 'rotate 20s linear infinite',
 				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
 				'enter': 'fade-in 0.5s ease-out forwards, scale 0.4s ease-out forwards',
+				'float': 'float 6s ease-in-out infinite',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'hero-pattern': 'url("/hero-pattern.svg")',
+				'grid-pattern': 'url("/grid-pattern.svg")',
 			},
 			transitionTimingFunction: {
 				'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',

@@ -84,7 +84,7 @@ const Tutor = () => {
       rating: 4.8,
       reviewsCount: 124,
       hourlyRate: 1200,
-      image: 'https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=400&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop',
       availability: 'Flexible',
       languages: ['English', 'Hindi', 'Gujarati'],
       description: 'Full-stack developer with expertise in React, Node.js, and modern web technologies. I focus on practical, project-based learning to help students build real-world applications.',
@@ -155,13 +155,13 @@ const Tutor = () => {
   
   return (
     <MainLayout>
-      <section className="pt-32 pb-20">
+      <section className="pt-32 pb-20 bg-gradient-to-b from-white to-blue-50/10">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Sidebar */}
             <div className="order-2 lg:order-1 lg:col-span-1">
               <div className="sticky top-24">
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 mb-6">
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 mb-6 hover:shadow-md transition-shadow">
                   <div className="aspect-square">
                     <img 
                       src={tutor.image} 
@@ -183,17 +183,21 @@ const Tutor = () => {
                     </div>
                     
                     <div className="space-y-4">
-                      <AnimatedButton className="w-full justify-center">
-                        Book a Session
-                      </AnimatedButton>
-                      <AnimatedButton variant="outline" className="w-full justify-center">
-                        Message
-                      </AnimatedButton>
+                      <Link to="#booking-form">
+                        <AnimatedButton className="w-full justify-center">
+                          Book a Session
+                        </AnimatedButton>
+                      </Link>
+                      <Link to="/messages">
+                        <AnimatedButton variant="outline" className="w-full justify-center">
+                          Message
+                        </AnimatedButton>
+                      </Link>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="p-5">
                     <h3 className="font-semibold mb-4 text-secondary">Availability</h3>
                     <p className="text-secondary/80 mb-4">{tutor.availability}</p>
@@ -238,7 +242,7 @@ const Tutor = () => {
                   {tutor.education.map((edu, index) => (
                     <div key={index} className="flex">
                       <div className="mr-4 mt-1">
-                        <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                        <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                             <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path>
@@ -259,7 +263,7 @@ const Tutor = () => {
                 <h2 className="text-2xl font-display font-semibold mb-4 text-secondary">Expertise</h2>
                 <div className="flex flex-wrap gap-2">
                   {tutor.expertise.map((skill, index) => (
-                    <span key={index} className="px-3 py-1.5 bg-secondary/5 rounded-full text-sm text-secondary/80">
+                    <span key={index} className="px-3 py-1.5 bg-accent/5 rounded-full text-sm text-secondary/80 hover:bg-accent/10 transition-colors">
                       {skill}
                     </span>
                   ))}
@@ -271,9 +275,9 @@ const Tutor = () => {
                 <h2 className="text-2xl font-display font-semibold mb-4 text-secondary">Reviews</h2>
                 <div className="space-y-6">
                   {tutor.reviews.map((review, index) => (
-                    <div key={index} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div key={index} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:border-gray-200 transition-colors">
                       <div className="flex items-center mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/10 to-accent/10 flex items-center justify-center mr-3">
                           <span className="font-medium text-secondary">{review.name.charAt(0)}</span>
                         </div>
                         <div>
@@ -297,6 +301,60 @@ const Tutor = () => {
                     See All Reviews
                   </AnimatedButton>
                 </div>
+              </div>
+              
+              {/* Booking Form */}
+              <div id="booking-form" className="mt-16 mb-10 bg-gradient-to-r from-accent/5 to-blue-50 p-6 rounded-2xl">
+                <h2 className="text-2xl font-display font-semibold mb-6 text-secondary">Book a Session with {tutor.name}</h2>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-secondary/80 mb-1">Date</label>
+                      <input 
+                        type="date" 
+                        className="w-full rounded-md border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-secondary/80 mb-1">Time</label>
+                      <select className="w-full rounded-md border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent/50">
+                        <option value="">Select a time</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">01:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-secondary/80 mb-1">Topic to Discuss</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Introduction to Neural Networks"
+                      className="w-full rounded-md border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-secondary/80 mb-1">Additional Notes</label>
+                    <textarea 
+                      rows={3}
+                      placeholder="Any specific questions or topics you'd like to cover"
+                      className="w-full rounded-md border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    ></textarea>
+                  </div>
+                  
+                  <AnimatedButton className="w-full md:w-auto">
+                    Book Now ({formatPrice(tutor.hourlyRate)})
+                  </AnimatedButton>
+                </form>
               </div>
             </div>
           </div>

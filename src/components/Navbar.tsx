@@ -42,7 +42,7 @@ const Navbar = () => {
             to="/" 
             className="text-2xl font-display font-semibold text-secondary flex items-center"
           >
-            <span className="bg-secondary text-white px-2 py-1 rounded mr-1 transform transition-transform hover:scale-105">Ed</span>
+            <span className="bg-accent text-white px-2 py-1 rounded mr-1 transform transition-transform hover:scale-105">Ed</span>
             <span className="text-secondary transform transition-transform hover:scale-105">Vix</span>
           </Link>
           
@@ -74,9 +74,11 @@ const Navbar = () => {
               Log In
             </AnimatedButton>
             <AnimatedButton 
+              variant="accent" 
               size="sm"
               to="/signup"
               asLink
+              withArrow
             >
               Sign Up
             </AnimatedButton>
@@ -139,10 +141,12 @@ const Navbar = () => {
                 Log In
               </AnimatedButton>
               <AnimatedButton 
+                variant="accent" 
                 size="sm" 
                 className="w-full justify-center"
                 to="/signup"
                 asLink
+                withArrow
               >
                 Sign Up
               </AnimatedButton>

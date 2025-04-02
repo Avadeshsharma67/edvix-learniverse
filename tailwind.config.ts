@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -80,6 +79,8 @@ export default {
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 				'glow': '0 0 15px rgba(56, 189, 248, 0.3)',
 				'glow-accent': '0 0 15px rgba(30, 64, 175, 0.2)',
+				'glow-hover': '0 0 20px rgba(56, 189, 248, 0.4)',
+				'glow-press': '0 0 8px rgba(56, 189, 248, 0.6)',
 			},
 			backdropBlur: {
 				xs: '2px',
@@ -135,6 +136,10 @@ export default {
 				'float': {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' }
+				},
+				'button-glow': {
+					'0%, 100%': { boxShadow: '0 0 10px rgba(56, 189, 248, 0.2)' },
+					'50%': { boxShadow: '0 0 20px rgba(56, 189, 248, 0.5)' }
 				}
 			},
 			animation: {
@@ -149,8 +154,8 @@ export default {
 				'scale': 'scale 0.4s ease-out forwards',
 				'rotate': 'rotate 20s linear infinite',
 				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
-				'enter': 'fade-in 0.5s ease-out forwards, scale 0.4s ease-out forwards',
 				'float': 'float 6s ease-in-out infinite',
+				'button-glow': 'button-glow 2s ease-in-out infinite',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

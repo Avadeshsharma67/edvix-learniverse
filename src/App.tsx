@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -17,8 +16,8 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import TutorDashboard from "./pages/TutorDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
+import Auth from "./pages/Auth";
 
-// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -48,11 +47,10 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/tutor" element={<TutorDashboard />} />
               <Route path="/dashboard/student" element={<StudentDashboard />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<Auth />} />
               
-              {/* This route ensures that exact "/" matches redirect to the index page */}
               <Route path="" element={<Navigate to="/" replace />} />
-              
-              {/* Catch-all route for 404 pages */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

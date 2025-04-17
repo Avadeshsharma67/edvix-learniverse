@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AnimatedButton from './AnimatedButton';
@@ -25,7 +24,6 @@ const Navbar = () => {
   }, []);
   
   useEffect(() => {
-    // Close mobile menu when route changes
     setIsMobileMenuOpen(false);
   }, [location]);
   
@@ -37,7 +35,6 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link 
             to="/" 
             className="text-2xl font-display font-semibold text-secondary flex items-center"
@@ -46,7 +43,6 @@ const Navbar = () => {
             <span className="text-secondary transform transition-transform hover:scale-105">Vix</span>
           </Link>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
@@ -63,12 +59,11 @@ const Navbar = () => {
             ))}
           </nav>
           
-          {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <AnimatedButton 
               variant="outline" 
               size="sm"
-              to="/login"
+              to="/auth"
               asLink
             >
               Log In
@@ -76,7 +71,7 @@ const Navbar = () => {
             <AnimatedButton 
               variant="accent" 
               size="sm"
-              to="/signup"
+              to="/auth"
               asLink
               withArrow
             >
@@ -84,7 +79,6 @@ const Navbar = () => {
             </AnimatedButton>
           </div>
           
-          {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2 rounded-md text-secondary"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -110,7 +104,6 @@ const Navbar = () => {
           </button>
         </div>
         
-        {/* Mobile Menu */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-300 ease-out-expo ${
             isMobileMenuOpen ? 'max-h-64 mt-4 opacity-100' : 'max-h-0 mt-0 opacity-0 pointer-events-none'
@@ -135,7 +128,7 @@ const Navbar = () => {
                 variant="outline" 
                 size="sm" 
                 className="w-full justify-center"
-                to="/login"
+                to="/auth"
                 asLink
               >
                 Log In
@@ -144,7 +137,7 @@ const Navbar = () => {
                 variant="accent" 
                 size="sm" 
                 className="w-full justify-center"
-                to="/signup"
+                to="/auth"
                 asLink
                 withArrow
               >

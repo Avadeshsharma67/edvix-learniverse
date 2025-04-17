@@ -12,7 +12,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState(null);
   
   useEffect(() => {
     // Check for existing session
@@ -36,18 +35,24 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
-      if (error) throw error;
-    } catch (error) {
+      if (error) {
+        console.error("Google Auth Error:", error);
+        throw error;
+      }
+      
+      // The redirection will happen automatically
+    } catch (error: any) {
+      console.error("Full error details:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to sign in with Google",
+        title: "Authentication Error",
+        description: error.message || "Failed to sign in with Google. Please make sure Google auth is enabled in Supabase.",
         variant: "destructive",
       });
     } finally {

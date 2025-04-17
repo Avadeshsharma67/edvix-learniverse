@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
 
 const PhoneAuthForm = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -12,6 +13,7 @@ const PhoneAuthForm = () => {
   const [loading, setLoading] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,18 +49,21 @@ const PhoneAuthForm = () => {
 
     try {
       const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         phone: formattedPhone,
         token: otp,
         type: 'sms'
       });
 
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Phone number verified successfully!",
-      });
+      
+      if (data.session) {
+        toast({
+          title: "Success",
+          description: "Phone number verified successfully!",
+        });
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast({
         title: "Error",

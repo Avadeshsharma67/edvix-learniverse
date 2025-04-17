@@ -1,10 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AnimatedButton from './AnimatedButton';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   
   const navLinks = [
@@ -26,6 +29,24 @@ const Navbar = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    // Check current auth status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
   
   return (
     <header 
@@ -60,23 +81,45 @@ const Navbar = () => {
           </nav>
           
           <div className="hidden md:flex items-center space-x-4">
-            <AnimatedButton 
-              variant="outline" 
-              size="sm"
-              to="/auth"
-              asLink
-            >
-              Log In
-            </AnimatedButton>
-            <AnimatedButton 
-              variant="accent" 
-              size="sm"
-              to="/auth"
-              asLink
-              withArrow
-            >
-              Sign Up
-            </AnimatedButton>
+            {isLoggedIn ? (
+              <>
+                <AnimatedButton 
+                  variant="outline" 
+                  size="sm"
+                  to="/dashboard"
+                  asLink
+                >
+                  Dashboard
+                </AnimatedButton>
+                <AnimatedButton 
+                  variant="accent" 
+                  size="sm"
+                  onClick={handleLogout}
+                >
+                  Log Out
+                </AnimatedButton>
+              </>
+            ) : (
+              <>
+                <AnimatedButton 
+                  variant="outline" 
+                  size="sm"
+                  to="/auth"
+                  asLink
+                >
+                  Log In
+                </AnimatedButton>
+                <AnimatedButton 
+                  variant="accent" 
+                  size="sm"
+                  to="/auth"
+                  asLink
+                  withArrow
+                >
+                  Sign Up
+                </AnimatedButton>
+              </>
+            )}
           </div>
           
           <button 
@@ -124,25 +167,49 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-3 pt-3 px-4 border-t border-slate-100">
-              <AnimatedButton 
-                variant="outline" 
-                size="sm" 
-                className="w-full justify-center"
-                to="/auth"
-                asLink
-              >
-                Log In
-              </AnimatedButton>
-              <AnimatedButton 
-                variant="accent" 
-                size="sm" 
-                className="w-full justify-center"
-                to="/auth"
-                asLink
-                withArrow
-              >
-                Sign Up
-              </AnimatedButton>
+              {isLoggedIn ? (
+                <>
+                  <AnimatedButton 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-center"
+                    to="/dashboard"
+                    asLink
+                  >
+                    Dashboard
+                  </AnimatedButton>
+                  <AnimatedButton 
+                    variant="accent" 
+                    size="sm" 
+                    className="w-full justify-center"
+                    onClick={handleLogout}
+                  >
+                    Log Out
+                  </AnimatedButton>
+                </>
+              ) : (
+                <>
+                  <AnimatedButton 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-center"
+                    to="/auth"
+                    asLink
+                  >
+                    Log In
+                  </AnimatedButton>
+                  <AnimatedButton 
+                    variant="accent" 
+                    size="sm" 
+                    className="w-full justify-center"
+                    to="/auth"
+                    asLink
+                    withArrow
+                  >
+                    Sign Up
+                  </AnimatedButton>
+                </>
+              )}
             </div>
           </nav>
         </div>
